@@ -1,0 +1,26 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres:13.3
+    restart: always
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres5432
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=postgres
+    volumes: 
+      - ./DB/postgres-data:/var/lib/postgresql/data
+    ports: 
+      - 4567:5432
+  sqa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres5432
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=db
+    
