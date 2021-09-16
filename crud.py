@@ -10,14 +10,14 @@ Session = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
 
 
-def recreate_database():
-    # Delete all models
-    Base.metadata.drop_all(engine)
-    # Create all models
-    Base.metadata.create_all(engine)
+# def recreate_database():
+#     # Delete all models
+#     Base.metadata.drop_all(engine)
+#     # Create all models
+#     Base.metadata.create_all(engine)
 
 # Individual session
-s = Session()
+# s = Session()
 
 
 # Always make sure that the session is closed after using it
@@ -36,6 +36,6 @@ s = Session()
 # adding rows to database
 # s.add(book)
 # s.commit()
-s.close()
+# s.close()
 
 # print(s.query(Book).all())

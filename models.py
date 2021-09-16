@@ -1,12 +1,8 @@
-# from typing_extensions import ParamSpecArgs
-# from datetime import date
-# from os import stat_result
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine #log,
 from sqlalchemy.sql.schema import ForeignKey, Index, UniqueConstraint #PrimaryKeyConstraint,
 from sqlalchemy.dialects.postgresql import NUMERIC
 
-# CREATE A LOCAL DB, DONT TRY OUT ON RDS YET
 Base = declarative_base()
 
 class Security(Base):
@@ -19,13 +15,11 @@ class Security(Base):
     industry        = Column(String)
     country         = Column(String)
 
-    def __str__(self):
-        return "(f'{self.id}', f'{self.ticker}', f'{self.company}', f'{self.sector}', f'{self.industry}', f'{self.country}')"
+    # def __str__(self):
+    #     return "(f'{self.id}', f'{self.ticker}', f'{self.company}', f'{self.sector}', f'{self.industry}', f'{self.country}')"
 
-    def __repr__(self):
-        return (f"{self.id}", f"{self.ticker}", f"{self.company}", f"{self.sector}", f"{self.industry}", f"{self.country}")
-        # return "<Book(title='{}', author='{}', pages={}, published={})>"\
-                # .format(self.title, self.author, self.pages, self.published)
+    # def __repr__(self):
+    #     return (f"{self.id}", f"{self.ticker}", f"{self.company}", f"{self.sector}", f"{self.industry}", f"{self.country}")
 
 class Security_table_log(Base):
 

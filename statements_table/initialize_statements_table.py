@@ -22,33 +22,7 @@ Session = sessionmaker(bind=engine)
 s = Session()
 r = s.query(Security.ticker, Security.id).all()
 sec_id_map = {i[0]:i[1] for i in r}
-
 scrapper = Macrotrend()
-
-
-#TODO: create a short test loggin an entry to a statement_log_table
-# my_db.execute("""CREATE TABLE IF NOT EXISTS statements_table_log (
-#     id INT(33) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-#     date VARCHAR(255),
-#     statement VARCHAR(5),
-#     log VARCHAR(255),
-#     status VARCHAR(15),
-#     tickers VARCHAR(10));""")
-# TESTING PURPOSE -- REMOVE IF SUCCESFUL WITH CRON
-# load = pd.DataFrame(
-#     [
-#         {
-#             "date"      : "22/07/2021",
-#             "statement" : "BS-Q",
-#             "log"       : "updating",
-#             "status"    : "SUCCESS",
-#             "tickers"   : "DHI"
-#         }
-#     ]
-# )
-# load.to_sql(con=engine, name="statements_table_log", index=False, if_exists="append")
-
-
 
 def populate_database(ticker_list):
 

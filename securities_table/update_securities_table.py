@@ -5,11 +5,16 @@ import sys, os
 import datetime
 import pandas as pd
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-print(os.path.curdir)
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.realpath(
+                __file__
+            )
+        )
+    )
+)
 
-
-# from database.database_class import Database
 from scrapping_sources.Finviz import Finviz
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -95,3 +100,5 @@ else:
             ]
         )
         load.to_sql(con=engine, name="securities_table_log", index=False, if_exists="append")
+
+s.close_all()
