@@ -9,7 +9,7 @@ class Security(Base):
 
     __tablename__   = 'securities_table'
     id              = Column(Integer, primary_key=True, autoincrement=True)
-    ticker          = Column(String, index= True)
+    ticker          = Column(String, index= True, unique=True)
     company         = Column(String)
     sector          = Column(String)
     industry        = Column(String)
