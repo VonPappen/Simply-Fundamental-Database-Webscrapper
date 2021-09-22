@@ -106,7 +106,10 @@ df_earnings['last_period_DB'] = df_earnings['ticker'].map(last_period_db)
 df_earnings['last_period_M'] = df_earnings['ticker'].map(M.latest_ending_period_available)
 
 print(df_earnings)
+try:
+    df_earnings.to_sql(con=engine, name="earnings_release", index=False, if_exists="append")
+except:
+    print("earnings table is already up to date")
 
-df_earnings.to_sql(con=engine, name="earnings_release", index=False, if_exists="append")
 
 s.close_all()
