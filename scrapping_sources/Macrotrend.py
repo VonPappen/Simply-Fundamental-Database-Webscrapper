@@ -192,7 +192,7 @@ class Macrotrend():
 
         return table_concat
     
-    def latest_ending_period_available(self, ticker, statement, time_format):
+    def latest_ending_period_available(self, ticker, statement='balance-sheet', time_format='quarterly'):
 
         try:
             df = self.get_statement(ticker, statement, time_format)

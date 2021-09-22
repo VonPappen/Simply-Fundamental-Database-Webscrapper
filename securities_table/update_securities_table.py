@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Don't forget the SHEBANG
 
+# TODO: FIND OUT WHY THE SCRIPT STOPS HALFWAY THROUGH
 import sys, os
 import datetime
 import pandas as pd

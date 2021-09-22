@@ -25,15 +25,9 @@ import datetime
 engine = create_engine(DATABASE_URI)
 session = sessionmaker(bind=engine)
 s = session()
-# my_db = Database()
 Nasdaq_scrapper = Nasdaq()
 Macrotrend_scrapper = Macrotrend()
 
-# r = s.query(Security.ticker).all()
-
-# security_map = [i[0] for i in r]
-# print(security_map)
-#####
 querry = s.query(Security.ticker, Security.id).all()
 security_map = {querry[i][0]: querry[i][1] for i, v in zip(range(len(querry)), range(len(querry)))}
 

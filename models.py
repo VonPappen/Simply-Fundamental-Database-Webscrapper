@@ -1,7 +1,9 @@
+from pandas.core.indexes import period
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine #log,
 from sqlalchemy.sql.schema import ForeignKey, Index, UniqueConstraint #PrimaryKeyConstraint,
 from sqlalchemy.dialects.postgresql import NUMERIC
+from sqlalchemy.sql.sqltypes import Boolean
 
 Base = declarative_base()
 
@@ -15,12 +17,6 @@ class Security(Base):
     industry        = Column(String)
     country         = Column(String)
 
-    # def __str__(self):
-    #     return "(f'{self.id}', f'{self.ticker}', f'{self.company}', f'{self.sector}', f'{self.industry}', f'{self.country}')"
-
-    # def __repr__(self):
-    #     return (f"{self.id}", f"{self.ticker}", f"{self.company}", f"{self.sector}", f"{self.industry}", f"{self.country}")
-
 class Security_table_log(Base):
 
     __tablename__   = "securities_table_log"
@@ -29,6 +25,24 @@ class Security_table_log(Base):
     log             = Column(String)
     status          = Column(String)
     added           = Column(String)
+
+class Earnings_release(Base):
+    """Updated everyday from Nasdaq"""
+
+    __tablename__   = "earnings_release"
+    __table_args__  = (UniqueConstraint("date", "ticker"),)
+
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    date            = Column(Date, index=True)
+    ticker          = Column(String,index=True)
+    security_id     = Column(Integer, ForeignKey("securities_table.id"))
+    # in_db           = Column(Boolean)
+    # in_db_f_data    = Column(Boolean)
+    # trend_f_data    = Column(Boolean)
+    # trend_ready     = Column(Boolean)
+    last_period_N   = Column(String)
+    last_period_DB  = Column(String)
+    last_period_M   = Column(String)
 
 class Statements_table_log(Base):
 

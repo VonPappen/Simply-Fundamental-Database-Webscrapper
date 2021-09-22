@@ -35,7 +35,7 @@ class Nasdaq:
 
         df = self.earnings_release(date=date)
 
-        nsdq_period_ending = df[df.symbol == ticker]['fiscalQuarterEnding'].values[0]
+        nsdq_period_ending = df[df.symbol == ticker]['fiscalQuarterEnding']
         convert_nsq_strftime = datetime.datetime.strptime(nsdq_period_ending, '%b/%Y').strftime("%Y-%m")
 
         return convert_nsq_strftime
