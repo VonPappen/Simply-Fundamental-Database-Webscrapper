@@ -43,16 +43,6 @@ time_format = [
 
 M = Macrotrend()
 
-
-r = s.query(Earnings_release.__table__).filter(Earnings_release.date >= look_back_date).all()
-earnings_df = pd.DataFrame(r)
-earnings_df.columns = Earnings_release.__table__.columns.keys()
-df = earnings_df[earnings_df['last_period_DB'].notna()]
-df = df[df['last_period_M'].notna()]
-
-# 1 - Remove all the rows where DB = N
-df = df[df['last_period_DB'] != df.last_period_N]
-
 def convert_to_ending_period_format(date):
     """Returns """
     result = datetime.datetime.strptime(str(date), '%Y-%m-%d').strftime("%Y-%m")
@@ -75,58 +65,98 @@ def fetch_all_statement(ticker, stmnt, time_format):
             Base.metadata.tables[f'{stmnt}_{time_format}'].columns['ticker'] ==str(ticker)).all()
     return r
 
-def update_db(ticker):
+def statement_table_log(ticker, statement, time_format, status):
 
-    for stmnt in statements:
-        for t_format in time_format:
+    try:
+        security_id= security_map[f"{ticker}"]
+    except:
+        security_id = None
 
-            latest = M.arrange_data(ticker, stmnt, t_format)
-            in_database = pd.DataFrame(fetch_all_statement(ticker, stmnt, t_format))
+    load = pd.DataFrame(
+        [
+            {
+                "date"          : str(datetime.date.today()),
+                "ticker"        : f"{ticker}",
+                "security_id"   : security_id,
+                "statement"     : f"{statement}",
+                "time_format"   : time_format,
+                "status"        : status
+              }
+        ]
+    )
 
-            try:
-                in_database.columns = ['date','statement','ticker','line_item', 'amount']
-                in_database['security_id'] = in_database.ticker.map(security_map)
-                in_database = M.move_column(in_database, 'security_id', 3)
-                latest['security_id'] = latest.ticker.map(security_map)
-                convert_dict = {
-                    'date': str,
-                    'statement': str,
-                    'ticker': str,
-                    'security_id': int,
-                    'line_item': str,
-                    'amount': float
-                }
+    load.to_sql(con=engine, name="statements_table_log", if_exists="append", index=False)
 
-                in_database = in_database.astype(convert_dict)
-                latest = latest.astype(convert_dict)
+def update_db(ticker, stmnt, t_format):
 
-            except:
+    latest = M.arrange_data(ticker, stmnt, t_format)
+    in_database = pd.DataFrame(fetch_all_statement(ticker, stmnt, t_format))
 
-                print("Something went wrong in the dataframe creation")
+    try:
+        in_database.columns = ['date','statement','ticker','line_item', 'amount']
+        in_database['security_id'] = in_database.ticker.map(security_map)
+        in_database = M.move_column(in_database, 'security_id', 3)
+        latest['security_id'] = latest.ticker.map(security_map)
+        convert_dict = {
+            'date': str,
+            'statement': str,
+            'ticker': str,
+            'security_id': int,
+            'line_item': str,
+            'amount': float
+        }
 
-            if isinstance(in_database, pd.DataFrame) and isinstance(latest, pd.DataFrame):
+        in_database = in_database.astype(convert_dict)
+        latest = latest.astype(convert_dict)
 
-                if latest.shape[0] == in_database.shape[0]:
+    except:
 
-                    print(f"Security {ticker} is already up to date")
+        print("Something went wrong in the dataframe creation")
 
-                else:
+    if isinstance(in_database, pd.DataFrame) and isinstance(latest, pd.DataFrame):
 
-                    in_database['date'] = pd.to_datetime(in_database.date)
-                    indb_date_set = set(in_database.date.values)
-                    latest['date'] = pd.to_datetime(latest.date)
-                    update_date_set = set(latest.date.values)
-                    update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
-                    
-                    update.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{time_format}", if_exists='append', index=False)
-                    
-            elif not isinstance(in_database, pd.DataFrame):
+        if latest.shape[0] == in_database.shape[0]:
 
-                print(f"Security {ticker} not in database")
+            print(f"Security {ticker} is already up to date")
 
-            else:
+        else:
 
-                print(f"NO data available on Macrotrend for {ticker}")
+            in_database['date'] = pd.to_datetime(in_database.date)
+            indb_date_set = set(in_database.date.values)
+            latest['date'] = pd.to_datetime(latest.date)
+            update_date_set = set(latest.date.values)
+            update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
+            # UPDATE THE CORRESPONDING TABLE
+            update.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{time_format}", if_exists='append', index=False)
+            # UPDATE THE STATEMENTS TABLE LOG
+            statement_table_log(ticker, stmnt, time_format, status="updated")
+            
+    elif not isinstance(in_database, pd.DataFrame):
+
+        statement_table_log(
+            ticker,
+            stmnt, 
+            time_format, 
+            status=f"{ticker} Not in Database"
+        )
+
+    else:
+
+        statement_table_log(
+            ticker,
+            stmnt, 
+            time_format, 
+            status=f"{ticker} no data availble on M"
+        )
+
+r = s.query(Earnings_release.__table__).filter(Earnings_release.date >= look_back_date).all()
+earnings_df = pd.DataFrame(r)
+earnings_df.columns = Earnings_release.__table__.columns.keys()
+df = earnings_df[earnings_df['last_period_DB'].notna()]
+df = df[df['last_period_M'].notna()]
+
+# 1 - Remove all the rows where DB = N
+df = df[df['last_period_DB'] != df.last_period_N]
 
 for row in df.iterrows():
 
@@ -148,9 +178,12 @@ for row in df.iterrows():
         s.commit()
 
         # GET THE STATEMENTS FROM MACROTREND AND POPULATE DB
-        update_db(ticker)
+        for stmnt in statements:
+            for t_format in time_format:
+                update_db(ticker, stmnt, t_format)
+                # statement_table_log(ticker, stmnt, t_format, status="updated")
 
-        #  VERIFY AND IF SUCCESFUL, UPDATE EARNINGS TABLE
+        #  VERIFY, IF SUCCESFUL, UPDATE EARNINGS TABLE AND STATEMENTS TABLE LOG
         if last_period_db(ticker) == on_DB:
             print("MARKER 2")
             s.query(Earnings_release.__table__).\
@@ -158,15 +191,16 @@ for row in df.iterrows():
                 update({"last_period_DB": f"{last_period_db(ticker)}"})
             s.commit()
 
+
         pass
 
     # IF THE DATE ON THE DATABASE IS NOT THE SAME AS THE DATE ON M
     # POPULATE THE DATABASE WITH THE MISSING DATA
     if on_DB != last_period_M_on_record:
         print("MARKER 3")
-
-        update_db(ticker)
-
-
+        for stmnt in statements:
+            for t_format in time_format:
+                update_db(ticker, stmnt, t_format)
+                # statement_table_log(ticker, stmnt, t_format, status="updated")
 
 s.close_all()

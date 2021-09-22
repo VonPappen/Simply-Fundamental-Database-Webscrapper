@@ -78,10 +78,11 @@ df_earnings['security_id'] = df_earnings['ticker'].map(security_map)
 #     return any(_)
 
 def convert_date_N(date):
+    """Converts the data from Nasdaq scrapper to same format"""
     return datetime.datetime.strptime(str(date), '%b/%Y').strftime("%Y-%m")
 
 def convert_to_ending_period_format(date):
-    """Returns """
+    """Converts the data from Database scrapper to same format"""
     result = datetime.datetime.strptime(str(date), '%Y-%m-%d').strftime("%Y-%m")
     return result
 

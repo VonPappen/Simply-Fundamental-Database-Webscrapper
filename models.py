@@ -49,10 +49,11 @@ class Statements_table_log(Base):
     __tablename__   = "statements_table_log"
     id              = Column(Integer, primary_key=True, autoincrement=True)
     date            = Column(Date)
-    log             = Column(String)
+    ticker          = Column(String)
+    security_id     = Column(Integer, ForeignKey("securities_table.id"))
+    statement       = Column(String)
+    time_format     = Column(String)
     status          = Column(String)
-    added           = Column(String)
-    days_after_release = Column(Integer)
 
 class balance_sheet_annual(Base):
 
