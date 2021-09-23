@@ -47,6 +47,7 @@ querry = s.query(Security.ticker, Security.id).all()
 security_map = {querry[i][0]: querry[i][1] for i, v in zip(range(len(querry)), range(len(querry)))}
 
 df_earnings['security_id'] = df_earnings['ticker'].map(security_map)
+# df_earnings['release_date'] = 
 
 # def is_in_database(ticker):
 #     """Returns True if ticker is in database"""

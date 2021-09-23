@@ -20,7 +20,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 import datetime
 
-DAY_VARIABLE = 14
+DAY_VARIABLE = 30
 look_back_date = str(datetime.date.today() - datetime.timedelta(days=DAY_VARIABLE))
 
 engine = create_engine(DATABASE_URI)
@@ -31,10 +31,10 @@ querry = s.query(Security.ticker, Security.id).all()
 security_map = {querry[i][0]: querry[i][1] for i, v in zip(range(len(querry)), range(len(querry)))}
 
 statements = [
-    'income_statement',
-    'balance_sheet',
-    'cash_flow_statement',
-    'financial_ratios'
+    'income-statement',
+    'balance-sheet',
+    'cash-flow-statement',
+    'financial-ratios'
 ]
 time_format = [
     'annual',
@@ -61,14 +61,28 @@ def last_period_db(ticker):
 
 def fetch_all_statement(ticker, stmnt, time_format):
 
-    r = s.query(Base.metadata.tables[f'{stmnt}_{time_format}']).where(\
-            Base.metadata.tables[f'{stmnt}_{time_format}'].columns['ticker'] ==str(ticker)).all()
+    r = s.query(Base.metadata.tables[f'{stmnt.replace("-", "_")}_{time_format}']).where(\
+            Base.metadata.tables[f'{stmnt.replace("-", "_")}_{time_format}'].columns['ticker'] ==str(ticker)).all()
     return r
 
 def statement_table_log(ticker, statement, time_format, status):
 
     try:
         security_id= security_map[f"{ticker}"]
+        load = pd.DataFrame(
+        [
+            {
+                "date"          : str(datetime.date.today()),
+                "ticker"        : f"{ticker}",
+                "security_id"   : security_id,
+                "statement"     : f"{statement}",
+                "time_format"   : time_format,
+                "status"        : status
+              }
+        ]
+    )
+
+        load.to_sql(con=engine, name="statements_table_log", if_exists="append", index=False)
     except:
         security_id = None
 
@@ -90,20 +104,23 @@ def statement_table_log(ticker, statement, time_format, status):
 def update_db(ticker, stmnt, t_format):
 
     latest = M.arrange_data(ticker, stmnt, t_format)
+    print("LATEST", latest)
     in_database = pd.DataFrame(fetch_all_statement(ticker, stmnt, t_format))
+    print("IN DATABASE", in_database)
 
     try:
-        in_database.columns = ['date','statement','ticker','line_item', 'amount']
+        in_database.columns = ['id','date','statement','ticker','security_id','line_item', 'amount']
         in_database['security_id'] = in_database.ticker.map(security_map)
         in_database = M.move_column(in_database, 'security_id', 3)
         latest['security_id'] = latest.ticker.map(security_map)
+        latest['amount'] = pd.to_numeric(latest['amount'])
         convert_dict = {
             'date': str,
             'statement': str,
             'ticker': str,
             'security_id': int,
             'line_item': str,
-            'amount': float
+            # 'amount': float
         }
 
         in_database = in_database.astype(convert_dict)
@@ -118,10 +135,11 @@ def update_db(ticker, stmnt, t_format):
         if latest.shape[0] == in_database.shape[0]:
 
             print(f"Security {ticker} is already up to date")
+            statement_table_log(ticker, stmnt, t_format, status="up to date")
 
         else:
 
-            in_database['date'] = pd.to_datetime(in_database.date)
+            in_database['date'] = pd.to_datetime(in_database['date'])
             indb_date_set = set(in_database.date.values)
             latest['date'] = pd.to_datetime(latest.date)
             update_date_set = set(latest.date.values)
@@ -129,14 +147,14 @@ def update_db(ticker, stmnt, t_format):
             # UPDATE THE CORRESPONDING TABLE
             update.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{time_format}", if_exists='append', index=False)
             # UPDATE THE STATEMENTS TABLE LOG
-            statement_table_log(ticker, stmnt, time_format, status="updated")
+            statement_table_log(ticker, stmnt, t_format, status="updated")
             
     elif not isinstance(in_database, pd.DataFrame):
 
         statement_table_log(
             ticker,
             stmnt, 
-            time_format, 
+            t_format, 
             status=f"{ticker} Not in Database"
         )
 
@@ -145,26 +163,29 @@ def update_db(ticker, stmnt, t_format):
         statement_table_log(
             ticker,
             stmnt, 
-            time_format, 
+            t_format, 
             status=f"{ticker} no data availble on M"
         )
 
-r = s.query(Earnings_release.__table__).filter(Earnings_release.date >= look_back_date).all()
+r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
 earnings_df = pd.DataFrame(r)
+print(earnings_df)
 earnings_df.columns = Earnings_release.__table__.columns.keys()
 df = earnings_df[earnings_df['last_period_DB'].notna()]
+
+# 1 - Remove all the rows that dont have data on Trend
 df = df[df['last_period_M'].notna()]
 
-# 1 - Remove all the rows where DB = N
+# 2 - Remove all the rows where DB = N
 df = df[df['last_period_DB'] != df.last_period_N]
 
 for row in df.iterrows():
 
     id_ = row[1][0]
     print(id_)
-    ticker = row[1][2]
-    last_period_M_on_record = row[1][6]
-    on_DB = row[1][5]
+    ticker = row[1][3]
+    last_period_M_on_record = row[1][7]
+    on_DB = row[1][6]
     M_latest = M.latest_ending_period_available(ticker)
     print(last_period_M_on_record == M_latest)
 
@@ -202,5 +223,8 @@ for row in df.iterrows():
             for t_format in time_format:
                 update_db(ticker, stmnt, t_format)
                 # statement_table_log(ticker, stmnt, t_format, status="updated")
+    
+    else:
+        pass
 
 s.close_all()

@@ -79,17 +79,18 @@ if finviz_table is not None:
         update_table = finviz_table[finviz_table.ticker.isin(list_of_tickers_to_add)]
         update_table.to_sql(con= engine, if_exists='append', index=False, name= 'securities_table')
         # Update securities_table_log
-        load = pd.DataFrame(
-            [
-                {
-                    "date":str(datetime.date.today()),
-                    "log":"updated",
-                    "status":"SUCCESS",
-                    "added": str(list_of_tickers_to_add)
-                }
-            ]
-        )
-        load.to_sql(con=engine, name="securities_table_log", index=False, if_exists="append")
+        for symbol in list_of_tickers_to_add:
+            load = pd.DataFrame(
+                [
+                    {
+                        "date":str(datetime.date.today()),
+                        "log":"updated",
+                        "status":"SUCCESS",
+                        "added": str(symbol)
+                    }
+                ]
+            )
+            load.to_sql(con=engine, name="securities_table_log", index=False, if_exists="append")
 else:
     pass
 

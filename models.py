@@ -30,10 +30,11 @@ class Earnings_release(Base):
     """Updated everyday from Nasdaq"""
 
     __tablename__   = "earnings_release"
-    __table_args__  = (UniqueConstraint("date", "ticker"),)
+    __table_args__  = (UniqueConstraint("last_period_N", "ticker"),)
 
     id              = Column(Integer, primary_key=True, autoincrement=True)
     date            = Column(Date, index=True)
+    release_date    = Column(Date, index=True)
     ticker          = Column(String,index=True)
     security_id     = Column(Integer, ForeignKey("securities_table.id"))
     # in_db           = Column(Boolean)
