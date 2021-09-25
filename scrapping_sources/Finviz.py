@@ -45,21 +45,31 @@ class Finviz():
 
         print('Starting to fecth...')
         print(querry_list)
+
+        # 
         for i in querry_list:
+
+
             time.sleep(1)
             print(i)
             file = f'https://finviz.com/screener.ashx?v=152&c=1,2,3,4,5&r={str(i)}'
             headers = {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
             }
-            res = requests.get(file, headers=headers)
-            data = pd.read_html(res.content)[7]
-
-            [ticker.append(i) for i in data.iloc[1:][0].values]
-            [company.append(i) for i in data.iloc[1:][1].values]
-            [sector.append(i) for i in data.iloc[1:][2].values]
-            [industry.append(i) for i in data.iloc[1:][3].values]
-            [country.append(i) for i in data.iloc[1:][4].values]
+            res_status = 0
+            while res_status != 200:
+                try:
+                    res = requests.get(file, headers=headers)
+                    res_status = res.status_code
+                    data = pd.read_html(res.content)[7]
+                    print(res.status_code)
+                    [ticker.append(i) for i in data.iloc[1:][0].values]
+                    [company.append(i) for i in data.iloc[1:][1].values]
+                    [sector.append(i) for i in data.iloc[1:][2].values]
+                    [industry.append(i) for i in data.iloc[1:][3].values]
+                    [country.append(i) for i in data.iloc[1:][4].values]
+                except:
+                    pass
 
         security_table = pd.DataFrame(
             [

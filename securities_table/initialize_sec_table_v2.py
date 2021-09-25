@@ -29,7 +29,7 @@ load = pd.DataFrame(
             "date":str(datetime.date.today()),
             "log":"updated",
             "status":"INITIALIZED",
-            "added": f"added {str(len(security_table.shape[0]))} securities on initialization"
+            "added": f"added {security_table.shape[0]} securities on initialization"
         }
     ]
 )

@@ -30,7 +30,7 @@ class Nasdaq:
 
         df = self.earnings_release(date)
         try:
-            return df.symbol.values
+            return df['symbol'].values
         except:
             return df['ticker'].values
 

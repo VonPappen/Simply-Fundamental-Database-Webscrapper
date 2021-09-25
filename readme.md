@@ -47,3 +47,4 @@ released during the last 30 days. We then follow a simple rule
     and the corresponding rows of the earnings_release_table
 
 
+#### NEXT STEP ---> GET IT DOCKER-READY

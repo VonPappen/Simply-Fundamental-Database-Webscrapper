@@ -29,10 +29,15 @@ services:
     #   - ./cron.log:/var/log/cron.log
     #   - ./cron.log_security:/var/log/cron.log_security
 
-    # python initiate_database.py
-    # && python securities_table/initialize_sec_table_v2.py
-    # && python statements_table/initialize_statements_table.py
-    command: bash -c " 
+            # Works
+            #     python initiate_database.py
+            # && python securities_table/initialize_sec_table_v2.py
+            # && python earnings_release/initialize_earnings_release.py
+            # && python statements_table/initialize_statements_table.py
+
+
+      # FIX CRONJOBS
+    command: bash -c "
             cron 
             && tail -f /var/log/cron.log"
     
