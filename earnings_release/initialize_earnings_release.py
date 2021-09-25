@@ -16,7 +16,7 @@ import datetime
 import pandas as pd
 from scrapping_sources.Nasdaq import Nasdaq
 from scrapping_sources.Macrotrend import Macrotrend
-from models import Security, Base
+from models import Earnings_release, Security, Base
 from config import DATABASE_URI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -27,6 +27,7 @@ session = sessionmaker(bind=engine)
 s = session()
 
 N = Nasdaq()
+print(N.earnings_release_tickers("2021-08-27"))
 M = Macrotrend()
 
 statements = [
@@ -53,6 +54,7 @@ def convert_to_ending_period_format(date):
     return result
 
 def last_period_db(ticker):
+    """Returns the the latest date available for statements in Database """
     try:
         r = s.query(Base.metadata.tables['income_statement_quarterly'].columns['date']).where(
             Base.metadata.tables['income_statement_quarterly'].columns['ticker'] == str(ticker)
@@ -63,11 +65,17 @@ def last_period_db(ticker):
     except:
         return None
 
+
 for date in day_gap:
-
+    print(str(date))
     try:
-
-        tickers = N.earnings_release_tickers(date=date)
+        tickers = N.earnings_release_tickers(str(date))
+        print(tickers)
+    except:
+        tickers = None
+    if tickers is None:
+        pass
+    else:
         df_earnings = pd.DataFrame()
         df_earnings['date'] = [datetime.date.today()] * len(tickers)
         df_earnings['ticker'] = tickers
@@ -111,34 +119,34 @@ for date in day_gap:
         # df_earnings['in_db_f_data'] = df_earnings['ticker'].map(has_f_data_in_db)
         # df_earnings['trend_f_data'] = df_earnings['ticker'].map(has_data_on_trend)
 
-        data = N.earnings_release(datetime.date.today())
+        data = N.earnings_release(date)
         df_earnings['last_period_N'] = data['fiscalQuarterEnding'].map(convert_date_N)
         df_earnings['last_period_DB'] = df_earnings['ticker'].map(last_period_db)
         df_earnings['last_period_M'] = df_earnings['ticker'].map(M.latest_ending_period_available)
 
-        print(df_earnings)
+        # print(df_earnings)
         try:
             df_earnings.to_sql(con=engine, name="earnings_release", index=False, if_exists="append")
         except:
             print("earnings table is already up to date")
 
-    except:
+    # except:
 
-        load = pd.DataFrame(
-            [
-                {
-                    "date"          : str(datetime.date.today()),
-                    "ticker"        : None,
-                    "release_date"  : date,
-                    # "statement"     : None,
-                    # "time_format"   : None,
-                    # "status"        : "No data",
-                    "last_period_M" : None,
-                    "last_period_DB": None,
-                    "last_period_N" : None
-                }
-            ]
-        )
-        load.to_sql(con=engine, name="earnings_release", if_exists="append", index=False)
+    #     load = pd.DataFrame(
+    #         [
+    #             {
+    #                 "date"          : str(datetime.date.today()),
+    #                 "ticker"        : None,
+    #                 "release_date"  : date,
+    #                 # "statement"     : None,
+    #                 # "time_format"   : None,
+    #                 # "status"        : "No data",
+    #                 "last_period_M" : None,
+    #                 "last_period_DB": None,
+    #                 "last_period_N" : None
+    #             }
+    #         ]
+    #     )
+    #     load.to_sql(con=engine, name="earnings_release", if_exists="append", index=False)
 
 s.close_all()

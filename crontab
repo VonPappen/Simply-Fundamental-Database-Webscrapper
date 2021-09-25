@@ -7,9 +7,12 @@ POSTGRES_HOST=db
 # * * * * * root echo "Hello world" >> /var/log/cron.log 2>&1
 # * * * * * root python3 /code/securities_table/initialize_sec_table_v2.py >> /var/log/cron.log 2>&1
 
-* * * * * root /usr/local/bin/python /code/securities_table/update_securities_table.py >> /var/log/cron.log_security 2>&1
+# WORKING
+# * * * * * root /usr/local/bin/python /code/securities_table/update_securities_table.py >> /var/log/cron.log_security 2>&1
 # * * * * * root /usr/local/bin/python /code/earnings_release/earnings_release.py >> /var/log/cron.log 2>&1 
-# * * * * * root /usr/local/bin/python /code/updates/statements_updates.py >> /var/log/cron.log 2>&1 
+
+# TEST FIRST
+* * * * * root /usr/local/bin/python /code/updates/statements_updates.py >> /var/log/cron.log 2>&1 
 
 # * * * * * root /usr/local/bin/python /code/statements_table/update_statement_table_14.py >> /var/log/cron.log 2>&1
 # Don't remove the empty line at the end of this file. It is required to run the cron job

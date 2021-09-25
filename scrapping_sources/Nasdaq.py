@@ -30,9 +30,12 @@ class Nasdaq:
 
         df = self.earnings_release(date)
         try:
-            return df['symbol'].values
+            res =  df['symbol'].values
+        # except:
+        #     res =  df['ticker'].values
         except:
-            return df['ticker'].values
+            res = None
+        return res
 
     def latest_ending_period_available(self, ticker, date):
 
