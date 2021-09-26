@@ -106,12 +106,71 @@ def update_db(ticker, stmnt, t_format):
     latest = M.arrange_data(ticker, stmnt, t_format)
     print("LATEST", latest)
     in_database = pd.DataFrame(fetch_all_statement(ticker, stmnt, t_format))
-    print("IN DATABASE", in_database)
+    print(f"IN DATABASE {ticker} {stmnt} {t_format}", in_database)
 
-    try:
-        in_database.columns = ['id','date','statement','ticker','security_id','line_item', 'amount']
-        in_database['security_id'] = in_database.ticker.map(security_map)
-        in_database = M.move_column(in_database, 'security_id', 3)
+    if not in_database.empty:
+
+        try:
+            in_database.columns = ['id','date','statement','ticker','security_id','line_item', 'amount']
+            in_database['security_id'] = in_database.ticker.map(security_map)
+            in_database = M.move_column(in_database, 'security_id', 3)
+            print(in_database)
+            latest['security_id'] = latest.ticker.map(security_map)
+            latest['amount'] = pd.to_numeric(latest['amount'])
+            convert_dict = {
+                'date': str,
+                'statement': str,
+                'ticker': str,
+                'security_id': int,
+                'line_item': str,
+                # 'amount': float
+            }
+
+            in_database = in_database.astype(convert_dict)
+            latest = latest.astype(convert_dict)
+
+        except:
+
+            print("Something went wrong in the dataframe creation")
+
+        if isinstance(in_database, pd.DataFrame) and isinstance(latest, pd.DataFrame):
+
+            if latest.shape[0] == in_database.shape[0]:
+
+                print(f"Security {ticker} is already up to date")
+                statement_table_log(ticker, stmnt, t_format, status="up to date")
+
+            else:
+
+                in_database['date'] = pd.to_datetime(in_database['date'])
+                indb_date_set = set(in_database.date.values)
+                latest['date'] = pd.to_datetime(latest.date)
+                update_date_set = set(latest.date.values)
+                update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
+                # UPDATE THE CORRESPONDING TABLE
+                update.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{t_format}", if_exists='append', index=False)
+                # UPDATE THE STATEMENTS TABLE LOG
+                statement_table_log(ticker, stmnt, t_format, status="updated")
+                
+        elif not isinstance(in_database, pd.DataFrame):
+
+            statement_table_log(
+                ticker,
+                stmnt, 
+                t_format, 
+                status=f"{ticker} Not in Database"
+            )
+
+        else:
+
+            statement_table_log(
+                ticker,
+                stmnt, 
+                t_format, 
+                status=f"{ticker} no data availble on M"
+            )
+
+    else:
         latest['security_id'] = latest.ticker.map(security_map)
         latest['amount'] = pd.to_numeric(latest['amount'])
         convert_dict = {
@@ -121,51 +180,12 @@ def update_db(ticker, stmnt, t_format):
             'security_id': int,
             'line_item': str,
             # 'amount': float
-        }
-
-        in_database = in_database.astype(convert_dict)
+            }
         latest = latest.astype(convert_dict)
-
-    except:
-
-        print("Something went wrong in the dataframe creation")
-
-    if isinstance(in_database, pd.DataFrame) and isinstance(latest, pd.DataFrame):
-
-        if latest.shape[0] == in_database.shape[0]:
-
-            print(f"Security {ticker} is already up to date")
-            statement_table_log(ticker, stmnt, t_format, status="up to date")
-
-        else:
-
-            in_database['date'] = pd.to_datetime(in_database['date'])
-            indb_date_set = set(in_database.date.values)
-            latest['date'] = pd.to_datetime(latest.date)
-            update_date_set = set(latest.date.values)
-            update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
-            # UPDATE THE CORRESPONDING TABLE
-            update.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{time_format}", if_exists='append', index=False)
-            # UPDATE THE STATEMENTS TABLE LOG
-            statement_table_log(ticker, stmnt, t_format, status="updated")
-            
-    elif not isinstance(in_database, pd.DataFrame):
-
-        statement_table_log(
-            ticker,
-            stmnt, 
-            t_format, 
-            status=f"{ticker} Not in Database"
-        )
-
-    else:
-
-        statement_table_log(
-            ticker,
-            stmnt, 
-            t_format, 
-            status=f"{ticker} no data availble on M"
-        )
+        latest['date'] = pd.to_datetime(latest.date)
+        latest.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{t_format}", if_exists='append', index=False)
+                # UPDATE THE STATEMENTS TABLE LOG
+        statement_table_log(ticker, stmnt, t_format, status="updated")
 
 r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
 earnings_df = pd.DataFrame(r)

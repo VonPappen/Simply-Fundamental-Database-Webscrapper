@@ -32,12 +32,13 @@ services:
             # Works
             #     python initiate_database.py
             # && python securities_table/initialize_sec_table_v2.py
-            # && python earnings_release/initialize_earnings_release.py
             # && python statements_table/initialize_statements_table.py
-
-
-      # FIX CRONJOBS
+            # && python earnings_release/initialize_earnings_release.py
     command: bash -c "
-            cron 
+            python initiate_database.py
+            && python securities_table/initialize_sec_table_v2.py
+            && python statements_table/initialize_statements_table.py
+            && python earnings_release/initialize_earnings_release.py
+            && cron 
             && tail -f /var/log/cron.log"
     
