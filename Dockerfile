@@ -26,13 +26,3 @@ RUN touch /var/log/cron.log_security
 #Install Cron
 RUN apt-get update
 RUN apt-get -y install cron
-
-# RUN chmod -R 777 /code/
-# RUN chmod 777 /code/securities_table/initialize_sec_table_v2.py
-
-# RUN /usr/bin/crontab /etc/cron.d/hello-cron
-# CMD ["cron", "-f"]
-
-
-# Run the command on container startup
-# CMD cron && tail -f /var/log/cron.log

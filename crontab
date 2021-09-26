@@ -1,21 +1,24 @@
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres5432
-POSTGRES_PORT=5432
-POSTGRES_DB=postgres
-POSTGRES_HOST=db
+# POSTGRES_USER=postgres
+# POSTGRES_PASSWORD=postgres5432
+# POSTGRES_PORT=5432
+# POSTGRES_DB=postgres
+# POSTGRES_HOST=db
+
+POSTGRES_USER=$PG_USER
+POSTGRES_PASSWORD=$PG_PASSWORD
+POSTGRES_PORT=$PG_PORT
+POSTGRES_DB=$PG_DATABASE
+POSTGRES_HOST=$PG_HOST
 
 # * * * * * root echo "Hello world" >> /var/log/cron.log 2>&1
 # * * * * * root python3 /code/securities_table/initialize_sec_table_v2.py >> /var/log/cron.log 2>&1
 
 # WORKING
-# Takes about 7 minutes
-# 
-# Takes about 1 hour and 30 minutes
-#  
-
-# TEST FIRST
+# Takes about 7 minutes ----> UPDATES THE SECURITIES TABLE EVERYDAY
 * * * * * root /usr/local/bin/python /code/securities_table/update_securities_table.py >> /var/log/cron.log_security 2>&1
+# Takes about 2 minutes ----> UPDATES THE EARNINGS RELEASE TABLE EVERYDAY
 * * * * * root /usr/local/bin/python /code/earnings_release/earnings_release.py >> /var/log/cron.log 2>&1
+# Takes about 5 minutes ----> UPDATES THE STATEMENTS TABLE EVERY DAY
 * * * * * root /usr/local/bin/python /code/updates/statements_updates.py >> /var/log/cron.log 2>&1
 
 # * * * * * root /usr/local/bin/python /code/statements_table/update_statement_table_14.py >> /var/log/cron.log 2>&1
