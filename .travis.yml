@@ -4,6 +4,8 @@ python:
 sudo: required
 services:
   - docker
+before_script:
+  - pip install docker-compose
 script:
   - python test.py
 
