@@ -12,6 +12,8 @@ services:
       - POSTGRES_DB=$POSTGRES_DB
       - POSTGRES_HOST=$POSTGRES_HOST
 
+
+
     command: bash -c "
             python initiate_database.py
             && python securities_table/initialize_sec_table_v2.py
