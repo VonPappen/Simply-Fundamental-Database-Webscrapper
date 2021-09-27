@@ -10,9 +10,9 @@ script:
   - python test.py
 
 after-success:
-  - docker build -t vonpappen/PSQL-scrapper .
+  - docker build -t vonpappen/psql-scrapper .
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-  - docker push vonpappen/PSQL-scrapper
+  - docker push vonpappen/psql-scrapper
 
 deploy:
   provider: elasticbeanstalk
