@@ -15,7 +15,7 @@ after-success:
 deploy:
   provider: elasticbeanstalk
   region: 'eu-west-3'
-  app: 'PSQL-webscrasp'
+  app: 'PSQL-webscrap'
   env: 'Psqlwebscrap-env'
   bucket_name: 'psql-webscrap-bucket'
   bucket_path: 'PSQL-webscrap'
