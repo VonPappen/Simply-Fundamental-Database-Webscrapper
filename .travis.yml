@@ -20,6 +20,6 @@ deploy:
   bucket_name: 'psql-webscrap-bucket'
   bucket_path: 'PSQL-webscrap'
   on:
-    branch: earnings-table-release
+    branch: main
   acess_key_id: $ACCESS_KEY_ID
   secret_access_key: $SECRET_ACCESS_KEY
