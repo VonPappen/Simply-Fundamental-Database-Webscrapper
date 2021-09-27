@@ -15,11 +15,11 @@ POSTGRES_HOST=$PG_HOST
 
 # WORKING
 # Takes about 7 minutes ----> UPDATES THE SECURITIES TABLE EVERYDAY
-* * * * * root /usr/local/bin/python /code/securities_table/update_securities_table.py >> /var/log/cron.log_security 2>&1
+0 0 * * * root /usr/local/bin/python /code/securities_table/update_securities_table.py >> /var/log/cron.log_security 2>&1
 # Takes about 2 minutes ----> UPDATES THE EARNINGS RELEASE TABLE EVERYDAY
-* * * * * root /usr/local/bin/python /code/earnings_release/earnings_release.py >> /var/log/cron.log 2>&1
+30 0 * * * root /usr/local/bin/python /code/earnings_release/earnings_release.py >> /var/log/cron.log 2>&1
 # Takes about 5 minutes ----> UPDATES THE STATEMENTS TABLE EVERY DAY
-* * * * * root /usr/local/bin/python /code/updates/statements_updates.py >> /var/log/cron.log 2>&1
+0 1 * * * root /usr/local/bin/python /code/updates/statements_updates.py >> /var/log/cron.log 2>&1
 
 # * * * * * root /usr/local/bin/python /code/statements_table/update_statement_table_14.py >> /var/log/cron.log 2>&1
 # Don't remove the empty line at the end of this file. It is required to run the cron job
