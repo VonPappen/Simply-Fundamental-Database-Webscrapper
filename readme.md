@@ -48,3 +48,5 @@ released during the last 30 days. We then follow a simple rule
 
 
 #### NEXT STEP ---> GET IT DOCKER-READY
+
+OTHER APPROACH --> USE AWS LAMBDA FOR THE CRONJOB
