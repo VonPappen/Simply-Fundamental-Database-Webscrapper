@@ -199,6 +199,7 @@ df = df[df['last_period_M'].notna()]
 # 2 - Remove all the rows where DB = N
 df = df[df['last_period_DB'] != df.last_period_N]
 
+
 for row in df.iterrows():
 
     id_ = row[1][0]
@@ -225,8 +226,6 @@ for row in df.iterrows():
                 # statement_table_log(ticker, stmnt, t_format, status="updated")
 
         #  VERIFY, IF SUCCESFUL, UPDATE EARNINGS TABLE AND STATEMENTS TABLE LOG
-        if last_period_db(ticker) == on_DB:
-            print("MARKER 2")
             s.query(Earnings_release.__table__).\
                 filter(Earnings_release.id == id_).\
                 update({"last_period_DB": f"{last_period_db(ticker)}"})
@@ -243,8 +242,10 @@ for row in df.iterrows():
             for t_format in time_format:
                 update_db(ticker, stmnt, t_format)
                 # statement_table_log(ticker, stmnt, t_format, status="updated")
+        s.query(Earnings_release.__table__). \
+            filter(Earnings_release.id == id_). \
+            update({"last_period_DB": f"{last_period_db(ticker)}"})
+        s.commit()
     
-    else:
-        pass
 
 s.close_all()
