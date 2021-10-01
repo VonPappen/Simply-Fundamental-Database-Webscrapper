@@ -92,14 +92,26 @@ if tickers is not None:
         return result
 
     def last_period_db(ticker):
+
         try:
-            r = s.query(Base.metadata.tables['income_statement_quarterly'].columns['date']).where(
-                Base.metadata.tables['income_statement_quarterly'].columns['ticker'] == str(ticker)
-            ).all()
-            r.sort(reverse=True)
-            r =  str(r[0][0])
+            period_list_on_db = []
+
+            for stmnt in statements:
+                for t_format in time_format:
+
+                    r = s.query(Base.metadata.tables[f'{stmnt}_{t_format}'].columns['date']).where(
+                        Base.metadata.tables[f'{stmnt}_{t_format}'].columns['ticker'] == str(ticker)
+                    ).all()
+                    r.sort(reverse=True)
+                    r =  str(r[0][0])
+                    period_list_on_db.append(r)
+
+            r = max(period_list_on_db)
+
             return convert_to_ending_period_format(r)
+
         except:
+            
             return None
 
     # df_earnings['in_db'] = df_earnings['ticker'].map(is_in_database)
