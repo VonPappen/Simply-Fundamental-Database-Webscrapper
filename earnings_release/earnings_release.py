@@ -92,7 +92,7 @@ if tickers is not None:
         return result
 
     def last_period_db(ticker):
-
+        """Returns the latest date available for all statements in Database combined """
         try:
             period_list_on_db = []
 
@@ -111,7 +111,7 @@ if tickers is not None:
             return convert_to_ending_period_format(r)
 
         except:
-            
+
             return None
 
     # df_earnings['in_db'] = df_earnings['ticker'].map(is_in_database)
