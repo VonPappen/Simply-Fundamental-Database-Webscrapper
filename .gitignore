@@ -1,2 +1,3 @@
-docker-commpose.dev.yml
+docker-compose.dev.yml
 aws_credentials.txt
+docker-compose.local.yml

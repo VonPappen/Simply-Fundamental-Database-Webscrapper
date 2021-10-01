@@ -1,17 +1,19 @@
 FROM python:latest
 ENV PYTHONUNBUFFERED=1
-RUN pip install psycopg2
-COPY . ./code
-WORKDIR /code
+COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
+RUN pip install psycopg2
 RUN pip install requests
 RUN pip install beautifulsoup4
 RUN pip install pandas
 RUN pip install openpyxl
 RUN pip install lxml
 RUN pip install html5lib
+COPY . ./code
+WORKDIR /code
 
-CMD ["sh", "-c","python test.py"]
+
+CMD ["sh", "-c","python updates/statements_updates.py"]
 
 # # CRON SETUP
 # # Add crontab file in the cron directory
