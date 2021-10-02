@@ -7,13 +7,18 @@ class Nasdaq:
 
     def __init__(self, 
         url=r"https://api.nasdaq.com/api/calendar/earnings",
-        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'}):
+        headers = {
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
+            "Accept-Language":"en-US,en;q=0.9",
+            "Accept-Encoding":"gzip, deflate, br",
+            "User-Agent":"Java-http-client/",
+            }):
 
         self.url = url
         self.headers = headers
         pass
 
-    def earnings_release(self, date, timeout_=5):
+    def earnings_release(self, date, timeout_=60):
         """ Returns the list of released at the specified date 
         date must be in the following format:
         YYYY-MM-DD
@@ -29,7 +34,9 @@ class Nasdaq:
     def earnings_release_tickers(self, date):
 
         df = self.earnings_release(date)
+
         try:
+            
             res =  df['symbol'].values
         # except:
         #     res =  df['ticker'].values
@@ -47,8 +54,9 @@ class Nasdaq:
         return convert_nsq_strftime
 
 
-# scrapper = Nasdaq()
-
+scrapper = Nasdaq()
+import datetime
+print(scrapper.earnings_release(datetime.date.today()))
 # raw_date = scrapper.latest_ending_period_available('KMX', datetime.date.today(), 'balance-sheet', 'quarterly')
 # print(raw_date)
 # print(scrapper.earnings_release(str(datetime.date.today()), 5))
