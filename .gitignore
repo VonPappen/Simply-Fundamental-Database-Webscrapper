@@ -1,3 +1,4 @@
 docker-compose.dev.yml
 aws_credentials.txt
 docker-compose.local.yml
+.travis.yml
