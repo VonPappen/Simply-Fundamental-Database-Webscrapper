@@ -1,9 +1,10 @@
+from os import stat_result
 from pandas.core.indexes import period
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, create_engine #log,
 from sqlalchemy.sql.schema import ForeignKey, Index, UniqueConstraint #PrimaryKeyConstraint,
 from sqlalchemy.dialects.postgresql import NUMERIC
-from sqlalchemy.sql.sqltypes import Boolean
+from sqlalchemy.sql.sqltypes import Boolean, DateTime
 
 Base = declarative_base()
 
@@ -48,12 +49,23 @@ class Earnings_release(Base):
 class Statements_table_log(Base):
 
     __tablename__   = "statements_table_log"
+    __table_args__  = (UniqueConstraint("ticker", "statement", "time_format", "period"),)
+
     id              = Column(Integer, primary_key=True, autoincrement=True)
     date            = Column(Date)
     ticker          = Column(String)
     security_id     = Column(Integer, ForeignKey("securities_table.id"))
     statement       = Column(String)
     time_format     = Column(String)
+    status          = Column(String)
+    period          = Column(String)
+
+class Lambda_logs(Base):
+
+    __tablename__   = "lambda_logs"
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    date            = Column(Date)
+    lambda_function = Column(String)
     status          = Column(String)
 
 class balance_sheet_annual(Base):

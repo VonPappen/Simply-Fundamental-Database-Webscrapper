@@ -12,4 +12,4 @@ RUN pip install html5lib
 COPY ./ ./code
 WORKDIR /code
 
-CMD ["sh", "-c","python updates/statements_updates.py"]
+CMD ["sh", "-c","python updates/statements_updates_v2.py"]

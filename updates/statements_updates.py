@@ -11,7 +11,7 @@ sys.path.append(
 )
 
 from config import DATABASE_URI
-from models import Earnings_release, Security, Base
+from models import Earnings_release, Security, Base, Lambda_logs
 from scrapping_sources.Macrotrend import Macrotrend
 # from earnings_release.earnings_release import last_period_db
 from sqlalchemy.orm import sessionmaker
@@ -42,6 +42,21 @@ time_format = [
 
 M = Macrotrend()
 
+# INDICATE THAT WE ARE CURRENTLY UPDATING A FUNCTION ON lambda_logs
+lambda_function = "ws_update_statements"
+
+def check_function_status(function):
+    "returns the status of a lambda_function"
+
+    try:
+        r = s.query(Lambda_logs.status).filter(
+            Lambda_logs.lambda_function    == function,
+            Lambda_logs.date        == datetime.date.today()
+        ).all()
+        return r[0][0]
+    except:
+        return None
+
 
 def convert_to_ending_period_format(date):
     """Returns """
@@ -50,14 +65,27 @@ def convert_to_ending_period_format(date):
 
 
 def last_period_db(ticker):
+    """Returns the the latest date available for statements in Database """
+
     try:
-        r = s.query(Base.metadata.tables['income_statement_quarterly'].columns['date']).where(
-            Base.metadata.tables['income_statement_quarterly'].columns['ticker'] == str(ticker)
-        ).all()
-        r.sort(reverse=True)
-        r = str(r[0][0])
+        period_list_on_db = []
+
+        for stmnt in statements:
+            for t_format in time_format:
+
+                r = s.query(Base.metadata.tables[f'{stmnt}_{t_format}'].columns['date']).where(
+                    Base.metadata.tables[f'{stmnt}_{t_format}'].columns['ticker'] == str(ticker)
+                ).all()
+                r.sort(reverse=True)
+                r =  str(r[0][0])
+                period_list_on_db.append(r)
+
+        r = max(period_list_on_db)
+
         return convert_to_ending_period_format(r)
+
     except:
+        
         return None
 
 
@@ -68,22 +96,9 @@ def fetch_all_statement(ticker, stmnt, time_format):
 
 
 def statement_table_log(ticker, statement, time_format, status):
+
     try:
         security_id = security_map[f"{ticker}"]
-        load = pd.DataFrame(
-            [
-                {
-                    "date": str(datetime.date.today()),
-                    "ticker": f"{ticker}",
-                    "security_id": security_id,
-                    "statement": f"{statement}",
-                    "time_format": time_format,
-                    "status": status
-                }
-            ]
-        )
-
-        load.to_sql(con=engine, name="statements_table_log", if_exists="append", index=False)
     except:
         security_id = None
 
@@ -99,13 +114,37 @@ def statement_table_log(ticker, statement, time_format, status):
             }
         ]
     )
+    load.to_sql(
+        con=engine,
+        name="statements_table_log",
+        if_exists="append",
+        index=False
+    )
 
-    load.to_sql(con=engine, name="statements_table_log", if_exists="append", index=False)
+
+# def statement_table_log_status(ticker, stmnt, t_format):
+#     """Retrieves the current status of a particular 
+#     statement_table_log_entry
+#     For the date parameter, get a query that returns the closest date to today
+#     """
+
+#     period = M.latest_ending_period_available(ticker)
+
+#     result = s.query(Statements_table_log.period). \
+#             filter(
+#                 (Statements_table_log.statement == stmnt),
+#                 (Statements_table_log.ticker == ticker),
+#                 (Statements_table_log.time_format == t_format),
+#                 (Statements_table_log.period == period)
+#             ).order_by(Statements_table_log.date.desc()).limit(1).all()
+
+#     return result[0][0]
+
 
 
 def update_db(ticker, stmnt, t_format):
+
     latest = M.arrange_data(ticker, stmnt, t_format)
-    print("LATEST", latest)
     in_database = pd.DataFrame(fetch_all_statement(ticker, stmnt, t_format))
     print(f"IN DATABASE {ticker} {stmnt} {t_format}", in_database)
 
@@ -186,68 +225,108 @@ def update_db(ticker, stmnt, t_format):
         latest['date'] = pd.to_datetime(latest.date)
         latest.to_sql(con=engine, name=f"{stmnt.replace('-', '_')}_{t_format}", if_exists='append', index=False)
         # UPDATE THE STATEMENTS TABLE LOG
+        # TODO: Move this function to the bottom of a foor loop
         statement_table_log(ticker, stmnt, t_format, status="updated")
 
 
-r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
-earnings_df = pd.DataFrame(r)
-print(earnings_df)
-earnings_df.columns = Earnings_release.__table__.columns.keys()
-df = earnings_df[earnings_df['last_period_DB'].notna()]
+if check_function_status(lambda_function) == "Updating...":
 
-# 1 - Remove all the rows that dont have data on Trend
-df = df[df['last_period_M'].notna()]
+    pass
 
-# 2 - Remove all the rows where DB = N
-df = df[df['last_period_DB'] != df.last_period_N]
+elif check_function_status(lambda_function) == "Completed.":
 
-for row in df.iterrows():
+    pass
 
-    id_ = row[1][0]
-    print(id_)
-    ticker = row[1][3]
-    last_period_M_on_record = row[1][7]
-    on_DB = row[1][6]
-    M_latest = M.latest_ending_period_available(ticker)
-    print(last_period_M_on_record == M_latest)
+else:
 
-    if last_period_M_on_record != M_latest:
-        print("MARKER 1")
+    load = pd.DataFrame(
+        [
+            {
+                "date": str(datetime.date.today()),
+                "lambda_function" : lambda_function,
+                "status": "Updating..."
+            }
+        ]
+    )
+    load.to_sql(
+        con=engine,
+        name="lambda_logs",
+        if_exists="append",
+        index=False
+    )
 
-        # UPDATE EARNINGS TABLE M
-        s.query(Earnings_release.__table__). \
-            filter(Earnings_release.id == id_). \
-            update({"last_period_M": f"{M_latest}"})
-        s.commit()
 
-        # GET THE STATEMENTS FROM MACROTREND AND POPULATE DB
-        for stmnt in statements:
-            for t_format in time_format:
-                update_db(ticker, stmnt, t_format)
-                # statement_table_log(ticker, stmnt, t_format, status="updated")
+    r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
+    earnings_df = pd.DataFrame(r)
+    print(earnings_df)
+    earnings_df.columns = Earnings_release.__table__.columns.keys()
+    df = earnings_df[earnings_df['last_period_DB'].notna()]
 
-            #  VERIFY, IF SUCCESFUL, UPDATE EARNINGS TABLE AND STATEMENTS TABLE LOG
-        s.query(Earnings_release.__table__). \
-            filter(Earnings_release.id == id_). \
-            update({"last_period_DB": f"{last_period_db(ticker)}"})
-        s.commit()
+    # 1 - Remove all the rows that dont have data on Trend
+    df = df[df['last_period_M'].notna()]
 
-        pass
+    # 2 - Remove all the rows where DB = N
+    df = df[df['last_period_DB'] != df.last_period_N]
 
-    if on_DB == last_period_M_on_record:
-        pass
+    for row in df.iterrows():
 
-    # IF THE DATE ON THE DATABASE IS NOT THE SAME AS THE DATE ON M
-    # POPULATE THE DATABASE WITH THE MISSING DATA
-    if on_DB != last_period_M_on_record:
-        print("MARKER 3")
-        for stmnt in statements:
-            for t_format in time_format:
-                update_db(ticker, stmnt, t_format)
-        # ONCE THIS IS DONE, UPDATE THE EARNINGS TABLE
-        s.query(Earnings_release.__table__). \
-            filter(Earnings_release.id == id_). \
-            update({"last_period_DB": f"{last_period_db(ticker)}"})
-        s.commit()
+        id_ = row[1][0]
+        print(id_)
+        ticker = row[1][3]
+        last_period_M_on_record = row[1][7]
+        on_DB = row[1][6]
+        M_latest = M.latest_ending_period_available(ticker)
+        print(last_period_M_on_record == M_latest)
+
+        if last_period_M_on_record != M_latest:
+            print("MARKER 1")
+
+            # UPDATE EARNINGS TABLE M
+            s.query(Earnings_release.__table__). \
+                filter(Earnings_release.id == id_). \
+                update({"last_period_M": f"{M_latest}"})
+            s.commit()
+
+            # GET THE STATEMENTS FROM MACROTREND AND POPULATE DB
+            for stmnt in statements:
+                for t_format in time_format:
+                    update_db(ticker, stmnt, t_format)
+                    # statement_table_log(ticker, stmnt, t_format, status="updated")
+
+                #  VERIFY, IF SUCCESFUL, UPDATE EARNINGS TABLE AND STATEMENTS TABLE LOG
+            s.query(Earnings_release.__table__). \
+                filter(Earnings_release.id == id_). \
+                update({"last_period_DB": f"{last_period_db(ticker)}"})
+            s.commit()
+
+            pass
+
+        if on_DB == last_period_M_on_record:
+            pass
+
+        # IF THE DATE ON THE DATABASE IS NOT THE SAME AS THE DATE ON M
+        # POPULATE THE DATABASE WITH THE MISSING DATA
+        if on_DB != last_period_M_on_record:
+            print("MARKER 3")
+            for stmnt in statements:
+                for t_format in time_format:
+                    update_db(ticker, stmnt, t_format)
+            # ONCE THIS IS DONE, UPDATE THE EARNINGS TABLE
+            s.query(Earnings_release.__table__). \
+                filter(Earnings_release.id == id_). \
+                update({"last_period_DB": f"{last_period_db(ticker)}"})
+            s.commit()
+    
+    # UPDATE THE LAMBDA LOGS:
+    s.query(Lambda_logs.__table__).filter(
+        Lambda_logs.date == datetime.date.today(),
+        Lambda_logs.lambda_function == lambda_function
+    ).update(
+        {
+            "status": "Completed.",
+        }
+    )
+
+    s.commit()
 
 s.close_all()

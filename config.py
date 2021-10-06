@@ -10,11 +10,11 @@ import os
 
 
 # AWS RDS
-USERNAME      ='postgres'
-PASSWORD      ='postgres5678'
-PORT         =5432
-DATABASE_NAME         ='webscrapping'
-HOST ='database-webscrap.ccaaerr6cq44.eu-west-3.rds.amazonaws.com'
+USERNAME        ='postgres'
+PASSWORD        ='postgres5678'
+PORT            =5432
+DATABASE_NAME   ='webscrapping'
+HOST            ='database-webscrap.ccaaerr6cq44.eu-west-3.rds.amazonaws.com'
 
 # USE WITH DOCKER
 # Set these values to an environment variable
