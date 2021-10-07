@@ -13,7 +13,7 @@ COPY . ./code
 WORKDIR /code
 
 
-CMD ["sh", "-c","python updates/statements_updates.py"]
+# CMD ["sh", "-c","python updates/statements_updates.py"]
 
 # # CRON SETUP
 # # Add crontab file in the cron directory

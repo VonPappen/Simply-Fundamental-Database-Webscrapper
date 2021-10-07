@@ -99,7 +99,7 @@ def last_period_db(ticker):
                 r =  str(r[0][0])
                 period_list_on_db.append(r)
 
-        r = max(period_list_on_db)
+        r = min(period_list_on_db)
 
         return convert_to_ending_period_format(r)
 
