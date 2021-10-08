@@ -62,7 +62,7 @@ if finviz_table is not None:
         load = pd.DataFrame(
             [
                 {
-                    "date":str(datetime.date.today()),
+                    "date":str(datetime.datetime.today()),
                     "log":"up to date",
                     "status":"SUCCESS",
                     "added": ""
@@ -83,7 +83,7 @@ if finviz_table is not None:
             load = pd.DataFrame(
                 [
                     {
-                        "date":str(datetime.date.today()),
+                        "date":str(datetime.datetime.today()),
                         "log":"updated",
                         "status":"SUCCESS",
                         "added": str(symbol)

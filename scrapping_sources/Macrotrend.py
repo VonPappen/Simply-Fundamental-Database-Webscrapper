@@ -80,6 +80,34 @@ class Macrotrend():
 
                 pass
 
+    def item_amount_unit(ticker, statement, time_format):
+
+        if time_format == "annual":
+
+            r = requests.get('https://www.macrotrends.net/stocks/charts/' + ticker + '/' + ticker + '/' + statement)
+            text = r.text
+            pattern = re.compile(r"var columnList = (.*);", re.DOTALL)
+            matches = pattern.findall(text)
+            matches = re.sub("\r|\n|\t",'',  matches[0])
+            pattern2 = re.compile(r"'(.*?)'")
+            match = pattern2.findall(str(matches))[0]
+
+            return str(match).split(" | ")[1]
+
+        elif time_format == "quarterly":
+
+            r = requests.get(f'https://www.macrotrends.net/stocks/charts/' + ticker + '/' + ticker + '/' + statement)
+            company_name = r.url.split('/')[6]
+            r = requests.get(f'https://www.macrotrends.net/stocks/charts/'+ ticker + '/' + company_name + '/' + statement + '?freq=Q')
+            text = r.text
+            pattern = re.compile(r"var columnList = (.*);", re.DOTALL)
+            matches = pattern.findall(text)
+            matches = re.sub("\r|\n|\t",'',  matches[0])
+            pattern2 = re.compile(r"'(.*?)'")
+            match = pattern2.findall(str(matches))[0]
+
+            return str(match).split(" | ")[1]
+
     def move_column(self, df, column, pos):
 
         col = df[column]
@@ -179,6 +207,18 @@ class Macrotrend():
         table = []
 
         def create_table(ticker, statement, time_format):
+
+            """Creates a table from ticker"""
+
+            ############### WIP
+            # for each stmnt
+            # for each t_format
+                # --------> Create an entry on statement_table
+                # ticker | stmnt | time_format | period | security_id | stmnt_id
+
+
+
+            ################ 
 
             df = self.arrange_data(ticker, statement, time_format)
             if isinstance(df, pd.DataFrame):

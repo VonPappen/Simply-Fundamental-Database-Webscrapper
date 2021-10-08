@@ -44,6 +44,17 @@ def populate_database(ticker_list):
 
     for stmnt in statements:
         for report_format in report_formats:
+
+            ############### WIP
+            # for each stmnt
+            # for each t_format
+                # --------> Create an entry on statement_table
+                # ticker | stmnt | time_format | period | security_id | stmnt_id
+
+
+
+            ################ 
+
             df = scrapper.generate_statement_table_multi_threading(ticker_list, stmnt, report_format)
             df['security_id'] = df.ticker.map(sec_id_map)
             df.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{report_format}", if_exists='append', index=False)
