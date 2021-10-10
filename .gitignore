@@ -2,3 +2,7 @@ docker-compose.dev.yml
 aws_credentials.txt
 docker-compose.local.yml
 .travis.yml
+statements_list_table/notes.ipynb
+test.ipynb
+test2.ipynb
+test3.ipynb

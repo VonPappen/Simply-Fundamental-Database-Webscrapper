@@ -182,8 +182,6 @@ class Macrotrend():
 
             return data
 
-        else:
-            pass
 
     def generate_statement_table_multi(self, ticker_list, statement, time_format):
 
@@ -215,9 +213,6 @@ class Macrotrend():
             # for each t_format
                 # --------> Create an entry on statement_table
                 # ticker | stmnt | time_format | period | security_id | stmnt_id
-
-
-
             ################ 
 
             df = self.arrange_data(ticker, statement, time_format)

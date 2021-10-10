@@ -8,6 +8,7 @@ from sqlalchemy.sql.sqltypes import Boolean, DateTime
 
 Base = declarative_base()
 
+
 class Security(Base):
 
     __tablename__   = 'securities_table'
@@ -26,6 +27,15 @@ class Security_table_log(Base):
     log             = Column(String)
     status          = Column(String)
     added           = Column(String)
+
+class Statements_list_table(Base):
+
+    __tablename__   = "statements_list_table"
+    security_id     = Column(Integer, ForeignKey("securities_table.id"))
+    ticker          = Column(String,index=True)
+    statement       = Column(String)
+    date            = Column(Date)
+    statement_id    = Column(Integer, primary_key=True, autoincrement=True)
 
 class Earnings_release(Base):
     """Updated everyday from Nasdaq"""

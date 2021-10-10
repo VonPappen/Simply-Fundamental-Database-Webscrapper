@@ -14,7 +14,7 @@ sys.path.append(
 
 import pandas as pd
 from scrapping_sources.Macrotrend import Macrotrend
-from models import Security
+from models import Security, Earnings_release
 from config import DATABASE_URI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -56,26 +56,6 @@ def generate_statement_list(ticker, statement, time_format):
         # 
         return df
 
-
-# for ticker in tickers_list:
-#     for stmnt in statements:
-#         for t_format in time_format:
-#             table_list = []
-#             try:
-#                 df = generate_statement_list(ticker, stmnt, t_format)
-#                 table_list.append(df)
-#             except:
-#                 pass
-# print(pd.concat(table))
-
-# print(generate_statement_list("MSFT","income-statement", "quarterly"))
-
-
-
-
-
-
-
 def generate_statement_list_multi(ticker_list, statement, time_format):
 
     table = []
@@ -83,15 +63,8 @@ def generate_statement_list_multi(ticker_list, statement, time_format):
     def create_table(ticker, statement, time_format):
 
         """Creates a table from ticker"""
-
-        ############### WIP
-        # for each stmnt
-        # for each t_format
-            # --------> Create an entry on statement_table
-            # ticker | stmnt | time_format | period | security_id | stmnt_id
-        ################ 
-
         df = generate_statement_list(ticker, statement, time_format)
+        
         if isinstance(df, pd.DataFrame):
             table.append(df)
 
@@ -104,9 +77,34 @@ def generate_statement_list_multi(ticker_list, statement, time_format):
     return table_concat
 
 
-for stmnt in statements:
-    for t_format in time_format:
+# Update the list table BEFORE the detail view
 
-        df = generate_statement_list_multi(tickers_list, stmnt, t_format)
+r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
+earnings_df = pd.DataFrame(r)
+earnings_df.columns = Earnings_release.__table__.columns.keys()
 
-df.to_sql(con = engine, name="statements_list_table", if_exists='append', index=False)
+# 1 - We are not concerned with tickers that are not in our DB
+df = earnings_df[earnings_df['last_period_DB'].notna()]
+
+# 2 - Remove all the rows that dont have data on Trend
+df = df[df['last_period_M'].notna()]
+
+# 3 - Remove all the rows where DB = N
+df = df[df['last_period_DB'] != df.last_period_N]
+
+# 4 - Remove all the rows where db == m
+# df = df[df['last_period_DB'] != df['last_period_M']]
+
+print(df)
+for row in df.iterrows():
+
+    id_ = row[1][0]
+    ticker = row[1][3]
+    # LATEST PERIOD M THAT WE HAVE ON OUR DATABASE
+    last_period_M_on_record = row[1][7]
+    on_DB = row[1][6]
+    M_latest = M.latest_ending_period_available(ticker)
+
+    # 5 - 
+    if last_period_M_on_record != M_latest:
+        pass

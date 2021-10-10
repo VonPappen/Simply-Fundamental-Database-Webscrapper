@@ -222,21 +222,23 @@ def update_db(ticker, stmnt, t_format):
     latest = latest_M(ticker, stmnt, t_format)
 
     if isinstance(in_database, pd.DataFrame) and isinstance(latest, pd.DataFrame):
+        
 
-        if latest.shape[0] == in_database.shape[0]:
+        # ###########THIS MIGHT NOT BE NECESSARY
+        # if latest.shape[0] == in_database.shape[0]:
             
-            # ALREADY UP TO DATE
-            print(f"Security {ticker} is already up to date")
+        #     # ALREADY UP TO DATE
+        #     print(f"Security {ticker} is already up to date")
 
-            # TODO: Change this guy with an update
-            statement_table_log_entry(
-                ticker, 
-                stmnt, 
-                t_format, 
-                status="up to date",
-                period= M.latest_ending_period_available(ticker))
+        #     # TODO: Change this guy with an update
+        #     statement_table_log_entry(
+        #         ticker, 
+        #         stmnt, 
+        #         t_format, 
+        #         status="up to date",
+        #         period= M.latest_ending_period_available(ticker))
 
-        else:
+        # else:
 
             # UPDATE THE DATABASE
             in_database['date'] = pd.to_datetime(in_database['date'])
@@ -344,6 +346,13 @@ for row in df.iterrows():
                 # --- IF IT DOES, PASS
                 if no_table_log(ticker, stmnt, t_format):
                     print(f"UPDATING {ticker} with {stmnt}, {t_format}")
+
+                    # TODO: INSERT STATEMENT LIST UPDATE FUNCTION HERE
+                    # BY DOING SO, WE WOULD NEED TO INCORPORATE A STATEMENT_ID COLUMN IN THE
+                    # UPDATE FUNCTION BELOW
+
+                    # TODO: CREATE A METHOD ALLOWING TO MAP A STATEMENT_ID
+
                     update_db(ticker, stmnt, t_format)
                     statement_table_log_entry(
                         ticker, 

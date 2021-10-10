@@ -51,36 +51,7 @@ if tickers is not None:
     security_map = {querry[i][0]: querry[i][1] for i, v in zip(range(len(querry)), range(len(querry)))}
 
     df_earnings['security_id'] = df_earnings['ticker'].map(security_map)
-    # df_earnings['release_date'] = 
 
-    # def is_in_database(ticker):
-    #     """Returns True if ticker is in database"""
-    #     query = s.query(Base.metadata.tables['securities_table'].columns['ticker']).all()
-    #     if ticker in [i[0] for i in query]:
-    #         return True
-    #     else:
-    #         return False
-
-    # def has_f_data_in_db(ticker):
-    #     data_boolean_list = []
-    #     for stmnt in statements:
-    #         for t_format in time_format:
-    #             q = s.query(Base.metadata.tables[f'{stmnt}_{t_format}']).where(
-    #                 Base.metadata.tables[f'{stmnt}_{t_format}'].columns['ticker'] ==str(ticker)).all()
-    #             if len(q) == 0:
-    #                 data_boolean_list.append(False)
-    #             else:
-    #                 data_boolean_list.append(True)
-    #     return any(data_boolean_list)
-
-    # def has_data_on_trend(ticker):
-    #     _ = []
-    #     for stmnt in statements:
-    #         for t_format in time_format:
-    #             r = M.arrange_data(ticker=ticker, statement= stmnt.replace('_', '-'), time_format=t_format)
-    #             if r is not None:
-    #                 _.append(True)
-    #     return any(_)
 
     def convert_date_N(date):
         """Converts the data from Nasdaq scrapper to same format"""
@@ -114,10 +85,6 @@ if tickers is not None:
         except:
         
             return None
-
-    # df_earnings['in_db'] = df_earnings['ticker'].map(is_in_database)
-    # df_earnings['in_db_f_data'] = df_earnings['ticker'].map(has_f_data_in_db)
-    # df_earnings['trend_f_data'] = df_earnings['ticker'].map(has_data_on_trend)
 
     data = N.earnings_release(datetime.date.today())
     df_earnings['last_period_N'] = data['fiscalQuarterEnding'].map(convert_date_N)
