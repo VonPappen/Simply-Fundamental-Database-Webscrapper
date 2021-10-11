@@ -110,10 +110,3 @@ def generate_statement_list_multi(ticker_list):
 # print(generate_statement_list_multi(['AAPL', 'MSFT']))
 # print(get_all_statements__M__(['AAPL']))
 # print(get_statement_list__M__('AAPL', 'balance-sheet', 'annual'))
-
-
-
-        
-df = generate_statement_list_multi(ticker_list)
-df.columns = ['date', 'ticker','statement','security_id', 'statement_id']
-df.to_sql(con = Stmnt_list.engine, name="statements_list_table", if_exists='append', index=False)

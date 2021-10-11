@@ -3,6 +3,10 @@ import sys, os
 
 from sqlalchemy.sql.expression import table
 
+from initialize_statements_list import get_all_statements__M__
+
+# from updates.statements_updates_v2 import latest_M
+
 sys.path.append(
     os.path.dirname(
         os.path.dirname(
@@ -15,7 +19,7 @@ sys.path.append(
 
 import pandas as pd
 from scrapping_sources.Macrotrend import Macrotrend
-from models import Security, Earnings_release
+from models import Security, Earnings_release, Statements_list_table
 from config import DATABASE_URI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -80,40 +84,46 @@ def generate_statement_list_multi(ticker_list, statement, time_format):
 
 # TODO: CREATE A STATEMENT LIST UPDATE FUNCTION
 
-# Update the list table BEFORE the detail view
-DAY_VARIABLE = 30
-look_back_date = str(datetime.date.today() - datetime.timedelta(days=DAY_VARIABLE))
+def latest_DB_list(ticker):
 
-r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
-earnings_df = pd.DataFrame(r)
-earnings_df.columns = Earnings_release.__table__.columns.keys()
+    # Retrieves all the statement list of a ticker
+    r = s.query(
+        Statements_list_table.security_id,
+        Statements_list_table.ticker,
+        Statements_list_table.statement,
+        Statements_list_table.date,
+        Statements_list_table.statement_id
+    ).where(
+        Statements_list_table.ticker == ticker
+    ).all()
 
-# 1 - We are not concerned with tickers that are not in our DB
-df = earnings_df[earnings_df['last_period_DB'].notna()]
-df = earnings_df[earnings_df['last_period_DB'] != 'None']
+    df = pd.DataFrame(r)
 
-# 2 - Remove all the rows that dont have data on Trend
-df = df[df['last_period_M'].notna()]
+    df.columns = ['security_id', 'ticker','statement', 'date', 'statement_id']
 
-# 3 - Remove all the rows where DB = N
-df = df[df['last_period_DB'] != df.last_period_N]
+    return df
 
-# 4 - Remove all the rows where db == m
-# df = df[df['last_period_DB'] != df['last_period_M']]
+print(get_all_statements__M__('AAPL'))
 
-print(df)
-for row in df.iterrows():
+# print(latest_DB_list('AAPL'))
 
-    id_ = row[1][0]
-    ticker = row[1][3]
-    # LATEST PERIOD M THAT WE HAVE ON OUR DATABASE
-    last_period_M_on_record = row[1][7]
-    on_DB = row[1][6]
 
-    # With this line, we're looking at the latest data available on Trend
-    M_latest = M.latest_ending_period_available(ticker)
 
-    # if the latest data on trend is not the same that what we have on record
-    if last_period_M_on_record != M_latest:
 
-        pass
+
+
+# def update_db_list(ticker, stmnt, t_format):
+
+#     """Compares the database with Macrotrend
+#     and update when necessary"""
+
+#     #  ATTRIBUTE A SINGLE ENTRY FOR EACH OF THE TICKERS ON THE 
+#     # STATEMENTS_TABLE_LOG
+
+#     in_database = latest_DB(ticker, stmnt, t_format)
+#     latest = latest_M(ticker, stmnt, t_format)
+
+
+
+
+s.close_all()
