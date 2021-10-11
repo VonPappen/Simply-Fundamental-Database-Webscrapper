@@ -47,6 +47,9 @@ def populate_database(ticker_list):
 
             df = scrapper.generate_statement_table_multi_threading(ticker_list, stmnt, report_format)
             df['security_id'] = df.ticker.map(sec_id_map)
+
+            # Create a new statement_id for list view
+            df["statement_id"] = df['statement'] + "_" + df['date'].apply(lambda x: x.replace('-', '')) + "_" + df['ticker']
             
             df.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{report_format}", if_exists='append', index=False)
 

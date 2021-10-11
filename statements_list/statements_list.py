@@ -105,27 +105,19 @@ class Statements_list(Database, Macrotrend):
 
         return update
 
-    def statement_list_mapping(self, ticker, date, statement):
+    # def statement_list_mapping(self, ticker, date, statement):
 
-        try:
-            # stmnt = self.generate_statement_key(statement, time_format)
+    #     try:
+    #         # stmnt = self.generate_statement_key(statement, time_format)
 
-            r = self.s.query(
-                Statements_list_table.statement_id
-            ).where(
-                Statements_list_table.ticker == ticker,
-                Statements_list_table.date == date, 
-                Statements_list_table.statement == statement
-            ).all()
+    #         r = self.s.query(
+    #             Statements_list_table.statement_id
+    #         ).where(
+    #             Statements_list_table.ticker == ticker,
+    #             Statements_list_table.date == date, 
+    #             Statements_list_table.statement == statement
+    #         ).all()
 
-            return r[0][0]
-        except:
-            pass
-
-    # # df['d'] = df.apply(lambda x: retrieve_statement_id(date = x['date'], ticker= x['ticker']), axis=1)
-    # udf['test'] = udf.apply(lambda x: statement_list_mapping(ticker = x['ticker'], date= x['date'], statement= x['statement']), axis=1)
-
-
-# print(Statements_list().generate_list_update("NAPA"))
-
-print(Statements_list().statement_list_mapping("TMQ", "2021-05-31", 'BS-Q' ))
+    #         return r[0][0]
+    #     except:
+    #         pass

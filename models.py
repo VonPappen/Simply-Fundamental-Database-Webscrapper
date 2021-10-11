@@ -31,11 +31,13 @@ class Security_table_log(Base):
 class Statements_list_table(Base):
 
     __tablename__   = "statements_list_table"
+    __table_args__  = (UniqueConstraint("ticker", "date", "statement"),)
+
     security_id     = Column(Integer, ForeignKey("securities_table.id"))
     ticker          = Column(String,index=True)
     statement       = Column(String)
     date            = Column(Date)
-    statement_id    = Column(Integer, primary_key=True, autoincrement=True)
+    statement_id    = Column(String, primary_key=True)
 
 class Earnings_release(Base):
     """Updated everyday from Nasdaq"""
@@ -48,10 +50,6 @@ class Earnings_release(Base):
     release_date    = Column(Date, index=True)
     ticker          = Column(String,index=True)
     security_id     = Column(Integer, ForeignKey("securities_table.id"))
-    # in_db           = Column(Boolean)
-    # in_db_f_data    = Column(Boolean)
-    # trend_f_data    = Column(Boolean)
-    # trend_ready     = Column(Boolean)
     last_period_N   = Column(String)
     last_period_DB  = Column(String)
     last_period_M   = Column(String)
@@ -90,6 +88,7 @@ class balance_sheet_annual(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class balance_sheet_quarterly(Base):
 
@@ -103,6 +102,7 @@ class balance_sheet_quarterly(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class income_statement_annual(Base):
 
@@ -116,6 +116,7 @@ class income_statement_annual(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class income_statement_quarterly(Base):
 
@@ -129,6 +130,7 @@ class income_statement_quarterly(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class cash_flow_statement_annual(Base):
 
@@ -142,6 +144,7 @@ class cash_flow_statement_annual(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class cash_flow_statement_quarterly(Base):
 
@@ -155,6 +158,7 @@ class cash_flow_statement_quarterly(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class financial_ratios_annual(Base):
 
@@ -168,6 +172,7 @@ class financial_ratios_annual(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 class financial_ratios_quarterly(Base):
 
@@ -181,6 +186,7 @@ class financial_ratios_quarterly(Base):
     security_id     = Column(Integer, ForeignKey("securities_table.id"), nullable=False)
     line_item       = Column(String)
     amount          = Column(NUMERIC)
+    statement_id    = Column(String, ForeignKey("statements_list_table"))
 
 combo_index_bsa     = Index(
     'combo_index_bsa',

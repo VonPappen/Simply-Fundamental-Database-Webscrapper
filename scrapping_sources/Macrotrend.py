@@ -180,6 +180,8 @@ class Macrotrend():
             data = pd.DataFrame([date, statement_format, ticker, security_id,line_item, amount]).T
             data.columns = ['date','statement','ticker','security_id','line_item','amount']
 
+            ### EXPERIMENTAL
+            data['statement_id'] = data['statement'] + "_" + data['date'].apply(lambda x: x.replace('-', '')) + "_" + data['ticker']
             return data
 
 
@@ -238,3 +240,4 @@ class Macrotrend():
 
         return converted_date
     
+

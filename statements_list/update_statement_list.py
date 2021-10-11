@@ -77,6 +77,8 @@ def generate_statement_list_multi(ticker_list, statement, time_format):
     return table_concat
 
 
+# TODO: CREATE A STATEMENT LIST UPDATE FUNCTION
+
 # Update the list table BEFORE the detail view
 
 r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
@@ -85,6 +87,7 @@ earnings_df.columns = Earnings_release.__table__.columns.keys()
 
 # 1 - We are not concerned with tickers that are not in our DB
 df = earnings_df[earnings_df['last_period_DB'].notna()]
+df = earnings_df[earnings_df['last_period_DB'] != 'None']
 
 # 2 - Remove all the rows that dont have data on Trend
 df = df[df['last_period_M'].notna()]
@@ -103,8 +106,11 @@ for row in df.iterrows():
     # LATEST PERIOD M THAT WE HAVE ON OUR DATABASE
     last_period_M_on_record = row[1][7]
     on_DB = row[1][6]
+
+    # With this line, we're looking at the latest data available on Trend
     M_latest = M.latest_ending_period_available(ticker)
 
-    # 5 - 
+    # if the latest data on trend is not the same that what we have on record
     if last_period_M_on_record != M_latest:
+
         pass
