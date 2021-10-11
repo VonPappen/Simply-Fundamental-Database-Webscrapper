@@ -153,6 +153,15 @@ class Macrotrend():
                     'cash-flow-statement':'CF',
                     'financial-ratios':'R'}
 
+        convert_dict = {
+            'date': str,
+            'statement': str,
+            'ticker': str,
+            'security_id': int,
+            'line_item': str,
+            # 'amount': float
+        }
+
         df = self.get_statement(ticker, statement, time_format)
 
         if isinstance(df, pd.DataFrame):
@@ -195,6 +204,8 @@ class Macrotrend():
             data.columns = ['date','statement','ticker','security_id','line_item','amount']
             data['statement_id'] = data['statement'] + "_" + data['date'].apply(lambda x: x.replace('-', '')) + "_" + data['ticker']
             data['security_id'] = data['ticker'].map(Database().security_id_map())
+            data = data.astype(convert_dict)
+            data['amount'] = pd.to_numeric(data['amount'])
 
 
             return data
