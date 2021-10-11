@@ -103,17 +103,12 @@ def latest_DB_list(ticker):
 
     return df
 
-# print(get_all_statements__M__('AAPL'))
-# print(latest_DB_list('AAPL'))
 
-
-def statement_list_update(ticker):
+def update_statement_list(ticker):
 
     """Compares the database with Macrotrend
     and update when necessary"""
 
-    # TODO: ATTRIBUTE A SINGLE ENTRY FOR EACH OF THE TICKERS ON THE 
-    # STATEMENTS_TABLE_LOG
 
     in_database_list = latest_DB_list(ticker)
     latest_list = get_all_statements__M__(ticker)
@@ -143,12 +138,12 @@ def statement_list_update(ticker):
                 index=False
             )
 
+            # CHECK IF THE UPDATE IS SUCCESFUL:
+            in_database_list = latest_DB_list(ticker)
 
+            if latest_list.shape[0] == in_database_list.shape[0]:
 
-
-
-
-
+                return "UPDATE SUCCESFUL"
 
 
 s.close_all()
