@@ -3,7 +3,7 @@ import sys, os
 
 from sqlalchemy.sql.expression import table
 
-from initialize_statements_list import get_all_statements__M__
+from initialize_list_function import get_all_statements__M__
 
 # from updates.statements_updates_v2 import latest_M
 
@@ -103,25 +103,50 @@ def latest_DB_list(ticker):
 
     return df
 
-print(get_all_statements__M__('AAPL'))
-
+# print(get_all_statements__M__('AAPL'))
 # print(latest_DB_list('AAPL'))
 
 
+def statement_list_update(ticker):
+
+    """Compares the database with Macrotrend
+    and update when necessary"""
+
+    # TODO: ATTRIBUTE A SINGLE ENTRY FOR EACH OF THE TICKERS ON THE 
+    # STATEMENTS_TABLE_LOG
+
+    in_database_list = latest_DB_list(ticker)
+    latest_list = get_all_statements__M__(ticker)
+
+    # if they are both datafrfames
+    if isinstance(in_database_list, pd.DataFrame) and isinstance(latest_list, pd.DataFrame):
+        
+        # if they do not have the same number of rows, an update must tabke place
+        if latest_list.shape[0] != in_database_list.shape[0]:
+
+
+            # format both dataframe 
+            in_database_list['date'] = pd.to_datetime(in_database_list['date'])
+            latest_list['date'] = pd.to_datetime(latest_list.date)
+
+            # create a date set for both dataframe
+            indb_date_set = set(in_database_list.date.values)
+            update_date_set = set(latest_list.date.values)
+            # extract the update based on date diference
+            update = latest_list[latest_list.date.isin(list(update_date_set - indb_date_set))]
+
+            # UPDATE THE CORRESPONDING TABLE
+            update.to_sql(
+                con=engine, 
+                name=f"statement_list_table",
+                if_exists='append',
+                index=False
+            )
 
 
 
 
-# def update_db_list(ticker, stmnt, t_format):
 
-#     """Compares the database with Macrotrend
-#     and update when necessary"""
-
-#     #  ATTRIBUTE A SINGLE ENTRY FOR EACH OF THE TICKERS ON THE 
-#     # STATEMENTS_TABLE_LOG
-
-#     in_database = latest_DB(ticker, stmnt, t_format)
-#     latest = latest_M(ticker, stmnt, t_format)
 
 
 

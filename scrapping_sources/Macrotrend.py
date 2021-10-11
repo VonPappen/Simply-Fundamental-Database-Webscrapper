@@ -1,9 +1,23 @@
+import sys, os
+
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.realpath(
+                __file__
+            )
+        )
+    )
+)
+
 import pandas as pd
 import requests, json, re
 from bs4 import BeautifulSoup as bs
 import datetime
 import concurrent.futures
 from itertools import repeat
+from database.database import Database
 
 class Macrotrend():
         
@@ -179,9 +193,10 @@ class Macrotrend():
 
             data = pd.DataFrame([date, statement_format, ticker, security_id,line_item, amount]).T
             data.columns = ['date','statement','ticker','security_id','line_item','amount']
-
-            ### EXPERIMENTAL
             data['statement_id'] = data['statement'] + "_" + data['date'].apply(lambda x: x.replace('-', '')) + "_" + data['ticker']
+            data['security_id'] = data['ticker'].map(Database().security_id_map())
+
+
             return data
 
 
@@ -241,3 +256,4 @@ class Macrotrend():
         return converted_date
     
 
+print(Macrotrend().arrange_data('AAPL', 'balance-sheet','quarterly'))

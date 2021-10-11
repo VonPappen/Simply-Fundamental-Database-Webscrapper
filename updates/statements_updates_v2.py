@@ -221,24 +221,13 @@ def update_db(ticker, stmnt, t_format):
     in_database = latest_DB(ticker, stmnt, t_format)
     latest = latest_M(ticker, stmnt, t_format)
 
+    # if they are both datafrfames
     if isinstance(in_database, pd.DataFrame) and isinstance(latest, pd.DataFrame):
         
+        # if they do not have the same number of rows, an update must tabke place
+        if latest.shape[0] != in_database.shape[0]:
+        
 
-        # ###########THIS MIGHT NOT BE NECESSARY
-        # if latest.shape[0] == in_database.shape[0]:
-            
-        #     # ALREADY UP TO DATE
-        #     print(f"Security {ticker} is already up to date")
-
-        #     # TODO: Change this guy with an update
-        #     statement_table_log_entry(
-        #         ticker, 
-        #         stmnt, 
-        #         t_format, 
-        #         status="up to date",
-        #         period= M.latest_ending_period_available(ticker))
-
-        # else:
 
             # UPDATE THE DATABASE
             in_database['date'] = pd.to_datetime(in_database['date'])
@@ -247,8 +236,7 @@ def update_db(ticker, stmnt, t_format):
             update_date_set = set(latest.date.values)
             update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
 
-            # BEFORE DOING THAT, MAKE SURE THAT AN ENTRY ON THE STATEMENT TABLE LOG
-            # DOESN'T ALREADY EXISTS
+
 
             # UPDATE THE CORRESPONDING TABLE
             update.to_sql(
@@ -258,52 +246,52 @@ def update_db(ticker, stmnt, t_format):
                 index=False
             )
         
-    elif not isinstance(in_database, pd.DataFrame):
+    # elif not isinstance(in_database, pd.DataFrame):
 
-        # THIS SHOULDNT HAPPEN BUT IT IS STILL HERE JUST IN CASE
-        # THE TICKERS LIST THAT WILL GO THROUGH THIS FUNCTION WILL BE 
-        # COMING FROM THE DATABASE
-        # COULD ALSO BE USEFUL FOR FUTURE IMPROVEMENTS
+    #     # THIS SHOULDNT HAPPEN BUT IT IS STILL HERE JUST IN CASE
+    #     # THE TICKERS LIST THAT WILL GO THROUGH THIS FUNCTION WILL BE 
+    #     # COMING FROM THE DATABASE
+    #     # COULD ALSO BE USEFUL FOR FUTURE IMPROVEMENTS
 
-        latest['security_id'] = latest.ticker.map(security_map)
-        latest['amount'] = pd.to_numeric(latest['amount'])
-        convert_dict = {
-            'date': str,
-            'statement': str,
-            'ticker': str,
-            'security_id': int,
-            'line_item': str,
-            # 'amount': float
-        }
-        latest = latest.astype(convert_dict)
-        latest['date'] = pd.to_datetime(latest.date)
-        latest.to_sql(
-            con=engine,
-            name=f"{stmnt.replace('-', '_')}_{t_format}",
-            if_exists='append',
-            index=False
-        )
+    #     latest['security_id'] = latest.ticker.map(security_map)
+    #     latest['amount'] = pd.to_numeric(latest['amount'])
+    #     convert_dict = {
+    #         'date': str,
+    #         'statement': str,
+    #         'ticker': str,
+    #         'security_id': int,
+    #         'line_item': str,
+    #         # 'amount': float
+    #     }
+    #     latest = latest.astype(convert_dict)
+    #     latest['date'] = pd.to_datetime(latest.date)
+    #     latest.to_sql(
+    #         con=engine,
+    #         name=f"{stmnt.replace('-', '_')}_{t_format}",
+    #         if_exists='append',
+    #         index=False
+    #     )
 
-        statement_table_log_entry(
-            ticker,
-            stmnt,
-            t_format,
-            status=f"{ticker} Not in Database",
-            period= M.latest_ending_period_available(ticker, stmnt, t_format)
-        )
+    #     statement_table_log_entry(
+    #         ticker,
+    #         stmnt,
+    #         t_format,
+    #         status=f"{ticker} Not in Database",
+    #         period= M.latest_ending_period_available(ticker, stmnt, t_format)
+    #     )
 
-    elif not isinstance(latest, pd.DataFrame):
+    # elif not isinstance(latest, pd.DataFrame):
 
-        # THIS SHOULD NOT HAPPEN EITHER BECAUSE WE WILL BE FILTERING 
-        # ALL THE TICKERS THAT WILL HAVE DATA ON TREND BEFOREHAND
+    #     # THIS SHOULD NOT HAPPEN EITHER BECAUSE WE WILL BE FILTERING 
+    #     # ALL THE TICKERS THAT WILL HAVE DATA ON TREND BEFOREHAND
 
-        statement_table_log_entry(
-            ticker,
-            stmnt,
-            t_format,
-            status=f"No data availble on M",
-            period=None
-        )
+    #     statement_table_log_entry(
+    #         ticker,
+    #         stmnt,
+    #         t_format,
+    #         status=f"No data availble on M",
+    #         period=None
+    #     )
  
 
 r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
@@ -354,6 +342,10 @@ for row in df.iterrows():
                     # TODO: CREATE A METHOD ALLOWING TO MAP A STATEMENT_ID
 
                     update_db(ticker, stmnt, t_format)
+                    # TODO: CHECK IF THE UPDATE HAS WORKED
+
+
+
                     statement_table_log_entry(
                         ticker, 
                         stmnt, 
