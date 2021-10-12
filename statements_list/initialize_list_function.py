@@ -1,7 +1,5 @@
 import sys, os
 
-from sqlalchemy.engine import create_engine
-
 
 sys.path.append(
     os.path.dirname(
@@ -13,7 +11,7 @@ sys.path.append(
     )
 )
 
-from statements_list import Statements_list
+# from statements_list import Statements_list
 from database.database import Database
 from scrapping_sources.Macrotrend import Macrotrend
 import pandas as pd
@@ -24,7 +22,7 @@ M = Macrotrend()
 
 ticker_list = Database().ticker_list()
 security_map = Database().security_id_map()
-Stmnt_list = Statements_list()
+# Stmnt_list = Statements_list()
 
 statements = [
     'income-statement',

@@ -153,14 +153,14 @@ class Macrotrend():
                     'cash-flow-statement':'CF',
                     'financial-ratios':'R'}
 
-        convert_dict = {
-            'date': str,
-            'statement': str,
-            'ticker': str,
-            'security_id': int,
-            'line_item': str,
-            # 'amount': float
-        }
+        # convert_dict = {
+        #     'date': str,
+        #     'statement': str,
+        #     'ticker': str,
+        #     'security_id': int,
+        #     'line_item': str,
+        #     # 'amount': float
+        # }
 
         df = self.get_statement(ticker, statement, time_format)
 
@@ -192,19 +192,20 @@ class Macrotrend():
             for i in df.iterrows():
 
                 serie = pd.Series(i)[1]
+                print(serie)
                 my_series.append(serie)
-                [statement_format.append(serie[2]) for i in range(len(serie.index.values[4:]))]
+                [statement_format.append(serie[2]) for i in range(len(serie.index.values[3:]))]
                 # [security_id.append(serie[3]) for i in range(len(serie.index.values[4:]))]
-                [line_item.append(i) for i in  serie.index.values[4:]]
-                [amount.append(i) for i in serie.values[4:]]
-                [date.append(serie[0]) for i in  range(len(serie.index.values[4:]))]
-                [ticker.append(serie[1]) for i in range(len(serie.index.values[4:]))]
+                [line_item.append(i) for i in  serie.index.values[3:]]
+                [amount.append(i) for i in serie.values[3:]]
+                [date.append(serie[0]) for i in  range(len(serie.index.values[3:]))]
+                [ticker.append(serie[1]) for i in range(len(serie.index.values[3:]))]
 
             data = pd.DataFrame([date, statement_format, ticker, security_id,line_item, amount]).T
             data.columns = ['date','statement','ticker','security_id','line_item','amount']
             data['statement_id'] = data['statement'] + "_" + data['date'].apply(lambda x: x.replace('-', '')) + "_" + data['ticker']
             data['security_id'] = data['ticker'].map(Database().security_id_map())
-            data = data.astype(convert_dict)
+            # data = data.astype(convert_dict)
             data['amount'] = pd.to_numeric(data['amount'])
 
 
@@ -267,4 +268,4 @@ class Macrotrend():
         return converted_date
     
 
-print(Macrotrend().arrange_data('AAPL', 'balance-sheet','quarterly'))
+print(Macrotrend().arrange_data('AAPL', 'income-statement','quarterly'))

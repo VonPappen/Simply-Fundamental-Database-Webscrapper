@@ -28,7 +28,7 @@ class Security_table_log(Base):
     status          = Column(String)
     added           = Column(String)
 
-class Statements_list_table(Base):
+class Statements_list(Base):
 
     __tablename__   = "statements_list_table"
     __table_args__  = (UniqueConstraint("ticker", "date", "statement"),)
@@ -67,14 +67,6 @@ class Statements_table_log(Base):
     time_format     = Column(String)
     status          = Column(String)
     period          = Column(String)
-
-class Lambda_logs(Base):
-
-    __tablename__   = "lambda_logs"
-    id              = Column(Integer, primary_key=True, autoincrement=True)
-    date            = Column(Date)
-    lambda_function = Column(String)
-    status          = Column(String)
 
 class balance_sheet_annual(Base):
 

@@ -13,7 +13,7 @@ sys.path.append(
 )
 
 from config import DATABASE_URI
-from models import Earnings_release, Security, Base, Lambda_logs, Statements_table_log
+from models import Earnings_release, Security,  Statements_table_log, Base
 from scrapping_sources.Macrotrend import Macrotrend
 # from earnings_release.earnings_release import last_period_db
 from sqlalchemy.orm import sessionmaker
@@ -55,22 +55,22 @@ convert_dict = {
 M = Macrotrend()
 
 # INDICATE THAT WE ARE CURRENTLY UPDATING A FUNCTION ON lambda_logs
-lambda_function = "ws_update_statements"
+# lambda_function = "ws_update_statements"
 
-def check_function_status(function):
-    "returns the status of a lambda_function"
+# def check_function_status(function):
+#     "returns the status of a lambda_function"
 
-    try:
-        r = s.query(Lambda_logs.status).filter(
-            Lambda_logs.lambda_function    == function,
-            Lambda_logs.date        == datetime.date.today()
-        ).all()
+#     try:
+#         r = s.query(Lambda_logs.status).filter(
+#             Lambda_logs.lambda_function    == function,
+#             Lambda_logs.date        == datetime.date.today()
+#         ).all()
 
-        return r[0][0]
+#         return r[0][0]
 
-    except:
+#     except:
 
-        return None
+#         return None
 
 
 def convert_to_ending_period_format(date):
@@ -183,32 +183,29 @@ def latest_DB(ticker, stmnt, t_format):
 
         return results
 
-
-def no_table_log(ticker, stmnt, t_format):
-
-    r = s.query(Statements_table_log.__table__).filter(
-        Statements_table_log.ticker == ticker,
-        Statements_table_log.statement == stmnt,
-        Statements_table_log.time_format == t_format,
-        Statements_table_log.period == M.latest_ending_period_available(ticker)
-    ).all()
-
-    return len(r) == 0
-
-def update_statements_log_entry(ticker, stmnt, t_format, period, status):
+# print(fetch_all_statement('AAPL','balance-sheet', 'annual'))
 
 
-    s.query(Statements_table_log.__table__).filter(
-        Statements_table_log.ticker == ticker,
-        Statements_table_log.statement == stmnt,
-        Statements_table_log.time_format == t_format,
-        Statements_table_log.period == period). \
-        update({"status": f"{status}"})
-    s.commit()
+################################# FOR TESTING PURPOSES
+
+r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
+earnings_df = pd.DataFrame(r)
+earnings_df.columns = Earnings_release.__table__.columns.keys()
+
+# 1 - We are not concerned with tickers that are not in our DB
+df = earnings_df[earnings_df['last_period_DB'].notna()]
+
+# 2 - Remove all the rows that dont have data on Trend
+df = df[df['last_period_M'].notna()]
+
+# 3 - Remove all the rows where DB = N
+df = df[df['last_period_DB'] != df.last_period_N]
+
+print(df['ticker'])
 
 
-    pass
 
+##################################
 
 def update_db(ticker, stmnt, t_format):
 
@@ -235,19 +232,23 @@ def update_db(ticker, stmnt, t_format):
             latest['date'] = pd.to_datetime(latest.date)
             update_date_set = set(latest.date.values)
             update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
+            df = update[['date','ticker', 'statement', 'security_id', 'statement_id']].drop_duplicates()
+
+            print(df)
 
 
+            # # UPDATE THE CORRESPONDING TABLE
+            # update.to_sql(
+            #     con=engine, 
+            #     name=f"{stmnt.replace('-', '_')}_{t_format}",
+            #     if_exists='append',
+            #     index=False
+            # )
 
-            # UPDATE THE CORRESPONDING TABLE
-            update.to_sql(
-                con=engine, 
-                name=f"{stmnt.replace('-', '_')}_{t_format}",
-                if_exists='append',
-                index=False
-            )
+            # in_database = latest_DB(ticker, stmnt, t_format)
 
-            in_database = latest_DB(ticker, stmnt, t_format)
+            # if latest.shape[0] == in_database.shape[0]:
 
-            if latest.shape[0] == in_database.shape[0]:
+            #     return "UPDATE SUCCESFUL"
 
-                return "UPDATE SUCCESFUL"
+# update_db('')

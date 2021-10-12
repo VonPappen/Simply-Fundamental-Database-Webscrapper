@@ -18,11 +18,12 @@ sys.path.append(
 from config import DATABASE_URI
 from models import Earnings_release, Security, Statements_table_log#, Base, Lambda_logs, 
 from scrapping_sources.Macrotrend import Macrotrend
-# from earnings_release.earnings_release import last_period_db
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 import pandas as pd
 import datetime
+from statements_list.update_list_function import update_statement_list
+from statements_detail.update_detail_function import update_db
 
 DAY_VARIABLE = 30
 look_back_date = str(datetime.date.today() - datetime.timedelta(days=DAY_VARIABLE))
@@ -66,6 +67,18 @@ def no_table_log(ticker, stmnt, t_format):
 
     return len(r) == 0
 
+def update_statements_log_entry(ticker, stmnt, t_format, period, status):
+
+    s.query(Statements_table_log.__table__).filter(
+        Statements_table_log.ticker == ticker,
+        Statements_table_log.statement == stmnt,
+        Statements_table_log.time_format == t_format,
+        Statements_table_log.period == period). \
+        update({"status": f"{status}"})
+    s.commit()
+
+    pass
+
 M = Macrotrend()
 
 r = s.query(Earnings_release.__table__).filter(Earnings_release.release_date >= look_back_date).all()
@@ -92,18 +105,26 @@ for row in df.iterrows():
 
     if last_period_M_on_record != M_latest:
 
-        print(f"UPDATING EARNINGS TABLE, COLUMN M, FOR {ticker}")
-        s.query(Earnings_release.__table__). \
-            filter(Earnings_release.id == id_). \
-            update({"last_period_M": f"{M_latest}"})
-        s.commit()
+        # TODO: ONLY APPLY IF ALL UPDATES ARE SUCCESFUL
+        # print(f"UPDATING EARNINGS TABLE, COLUMN M, FOR {ticker}")
+        # s.query(Earnings_release.__table__). \
+        #     filter(Earnings_release.id == id_). \
+        #     update({"last_period_M": f"{M_latest}"})
+        # s.commit()
 
         print("GETTING STATEMENTS FROM MACROTREND")
+
+
         for stmnt in statements:
             for t_format in time_format:
 
+                update_db(ticker, stmnt, t_format)
+
                 pass
-            # TODO: STATEMENTS_LIST_FUNCTION_IS READY
-            # COMBINE BOTH FUNCTIONS IN THIS LOOP
-            # TODO: UPDATE THE DEATAIL UPDATE FUNCTION 
-            # MAKE SURE IT USES THE SAME LOGIC THAN LIST
+                # TODO: STATEMENTS_LIST_FUNCTION_IS READY
+                # COMBINE BOTH FUNCTIONS IN THIS LOOP AND IF BOTH FUNCTIONS PASS
+                # GO AHEAD AND UPDATE STATEMETNS_TABLE_LOG
+                # TODO: UPDATE THE DEATAIL UPDATE FUNCTION 
+                # MAKE SURE IT USES THE SAME LOGIC THAN LIST
+
+        

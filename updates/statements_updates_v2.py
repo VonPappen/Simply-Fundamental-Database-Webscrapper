@@ -160,7 +160,7 @@ def latest_M(ticker, stmnt, t_format):
     data of a particular ticker from Macrotrend"""
 
     latest = M.arrange_data(ticker, stmnt, t_format)
-    latest['security_id'] = latest.ticker.map(security_map)
+    # latest['security_id'] = latest.ticker.map(security_map)
     latest['amount'] = pd.to_numeric(latest['amount'])
     latest = latest.astype(convert_dict)
     
@@ -177,7 +177,7 @@ def latest_DB(ticker, stmnt, t_format):
     if not results.empty:
 
         results.columns = ['id', 'date', 'statement', 'ticker', 'security_id', 'line_item', 'amount']
-        results['security_id'] = results.ticker.map(security_map)
+        # results['security_id'] = results.ticker.map(security_map)
         results = M.move_column(results, 'security_id', 3)
         results = results.astype(convert_dict)
 
@@ -235,8 +235,14 @@ def update_db(ticker, stmnt, t_format):
             latest['date'] = pd.to_datetime(latest.date)
             update_date_set = set(latest.date.values)
             update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
+            df = update[['date','ticker', 'statement', 'security_id', 'statement_id']].drop_duplicates()
 
-
+            df.to_sql(
+                con=engine, 
+                name="statements_list_table",
+                if_exists='append',
+                index=False
+            )
 
             # UPDATE THE CORRESPONDING TABLE
             update.to_sql(
@@ -343,9 +349,6 @@ for row in df.iterrows():
 
                     update_db(ticker, stmnt, t_format)
                     # TODO: CHECK IF THE UPDATE HAS WORKED
-
-
-
                     statement_table_log_entry(
                         ticker, 
                         stmnt, 

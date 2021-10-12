@@ -68,4 +68,3 @@ class Database():
         return tickers_list
 
     
-print(Database().security_id_map())
