@@ -94,7 +94,7 @@ def generate_statement_list_multi(ticker_list):
         if isinstance(df, pd.DataFrame):
             table.append(df)
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=13) as executor:
         executor.map(create_table, ticker_list)#, repeat(statement), repeat(time_format))
 
     table_concat = pd.concat(table)

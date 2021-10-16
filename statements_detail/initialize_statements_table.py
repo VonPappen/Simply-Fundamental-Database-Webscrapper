@@ -50,6 +50,15 @@ def populate_database(ticker_list):
 
             # Create a new statement_id for list view
             df["statement_id"] = df['statement'] + "_" + df['date'].apply(lambda x: x.replace('-', '')) + "_" + df['ticker']
+
+            df_list = df[['date','ticker', 'statement', 'security_id', 'statement_id']].drop_duplicates()
+
+            df_list.to_sql(
+                con=engine, 
+                name="statements_list_table",
+                if_exists='append',
+                index=False
+            )
             
             df.to_sql(con = engine, name=f"{stmnt.replace('-','_')}_{report_format}", if_exists='append', index=False)
 
@@ -63,7 +72,7 @@ def chunks(lst, n):
         chunk_list.append(lst[i:i + n])
     return chunk_list
 
-tickers_list_chunks = chunks(tickers_, 100)
+tickers_list_chunks = chunks(tickers_, 500)
 
 for chunk in tickers_list_chunks:
     print(chunk)

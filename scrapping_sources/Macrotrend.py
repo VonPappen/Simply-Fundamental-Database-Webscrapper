@@ -192,7 +192,6 @@ class Macrotrend():
             for i in df.iterrows():
 
                 serie = pd.Series(i)[1]
-                print(serie)
                 my_series.append(serie)
                 [statement_format.append(serie[2]) for i in range(len(serie.index.values[3:]))]
                 # [security_id.append(serie[3]) for i in range(len(serie.index.values[4:]))]
@@ -266,6 +265,3 @@ class Macrotrend():
             converted_date = None
 
         return converted_date
-    
-
-print(Macrotrend().arrange_data('AAPL', 'income-statement','quarterly'))

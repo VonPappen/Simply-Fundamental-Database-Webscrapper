@@ -232,7 +232,7 @@ def update_db(ticker, stmnt, t_format):
             latest['date'] = pd.to_datetime(latest.date)
             update_date_set = set(latest.date.values)
             update = latest[latest.date.isin(list(update_date_set - indb_date_set))]
-            df = update[['date','ticker', 'statement', 'security_id', 'statement_id']].drop_duplicates()
+            
 
             print(df)
 

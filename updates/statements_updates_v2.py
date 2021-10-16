@@ -13,7 +13,7 @@ sys.path.append(
 )
 
 from config import DATABASE_URI
-from models import Earnings_release, Security, Base, Lambda_logs, Statements_table_log
+from models import Earnings_release, Security, Base, Statements_table_log
 from scrapping_sources.Macrotrend import Macrotrend
 # from earnings_release.earnings_release import last_period_db
 from sqlalchemy.orm import sessionmaker
@@ -57,20 +57,20 @@ M = Macrotrend()
 # INDICATE THAT WE ARE CURRENTLY UPDATING A FUNCTION ON lambda_logs
 lambda_function = "ws_update_statements"
 
-def check_function_status(function):
-    "returns the status of a lambda_function"
+# def check_function_status(function):
+#     "returns the status of a lambda_function"
 
-    try:
-        r = s.query(Lambda_logs.status).filter(
-            Lambda_logs.lambda_function    == function,
-            Lambda_logs.date        == datetime.date.today()
-        ).all()
+#     try:
+#         r = s.query(Lambda_logs.status).filter(
+#             Lambda_logs.lambda_function    == function,
+#             Lambda_logs.date        == datetime.date.today()
+#         ).all()
 
-        return r[0][0]
+#         return r[0][0]
 
-    except:
+#     except:
 
-        return None
+#         return None
 
 
 def convert_to_ending_period_format(date):
@@ -173,10 +173,11 @@ def latest_DB(ticker, stmnt, t_format):
      data of a particular ticker from the database"""
 
     results = pd.DataFrame(fetch_all_statement(ticker, stmnt, t_format))
+    print(results)
 
     if not results.empty:
 
-        results.columns = ['id', 'date', 'statement', 'ticker', 'security_id', 'line_item', 'amount']
+        results.columns = ['id', 'date', 'statement', 'ticker', 'security_id', 'line_item', 'amount', 'statement_id']
         # results['security_id'] = results.ticker.map(security_map)
         results = M.move_column(results, 'security_id', 3)
         results = results.astype(convert_dict)
